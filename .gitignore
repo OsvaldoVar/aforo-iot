@@ -1,0 +1,22 @@
+# Android Studio
+*.iml
+.gradle/
+local.properties
+build/
+.idea/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+
+# Secretos
+backend/api_aforo/config.php
+firmware/**/config.h
+.env
+
+# Basura de SO y editor
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
