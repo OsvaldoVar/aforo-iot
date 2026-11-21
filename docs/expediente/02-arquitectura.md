@@ -14,13 +14,13 @@ El sistema **Aforo IoT** adopta una arquitectura cliente–servidor en cuatro ca
    Encargada de la captura física de eventos y la respuesta local. El microcontrolador ESP32 integra un lector RFID RC522 (interfaz SPI) para leer el UID de las tarjetas, un sensor DHT22 para medir temperatura y humedad relativa, y actuadores locales (LED verde, LED rojo y buzzer). El firmware gestiona la conexión WiFi, el antirrebote de tarjetas (3 s), el envío periódico de mediciones (15 s) y la consulta de comandos remotos (3 s) utilizando programación no bloqueante con `millis()`.
 
 2. **Capa de servicios (API REST PHP 8):**  
-   Alojada en el servidor Apache de XAMPP bajo la ruta `/api_aforo/`. Expone tres grupos de endpoints que intercambian mensajes JSON con estructura uniforme (`success`, `mensaje` y datos específicos):
+   Servida mediante el servidor PHP 8 integrado (`php -S`) en Linux, puerto 8080, bajo la ruta `/api_aforo/`. Expone tres grupos de endpoints que intercambian mensajes JSON con estructura uniforme (`success`, `mensaje` y datos específicos):
    - `auth/`: registro de usuarios (`registro.php`), inicio de sesión con generación de token (`login.php`) y validación de sesión (`validar_token.php`).
    - `esp32/`: recepción de lecturas RFID con regla de alternancia entrada/salida y validación de `aforo_max` (`acceso.php`), registro de mediciones ambientales y evaluación de umbrales (`medicion.php`), y entrega de comandos pendientes (`comando.php`).
    - `app/`: consulta del estado actual (`estado.php`, `dentro.php`), historiales filtrados (`historial_accesos.php`, `historial_mediciones.php`), administración de `dispositivos.php`, `personas.php`, `limites.php` y `alertas.php`, encolado de acciones (`comando.php`) y exportación (`exportar.php`).
 
-3. **Capa de datos (MySQL `aforo_iot`):**  
-   Base de datos relacional accedida desde PHP mediante PDO con sentencias preparadas para prevenir inyección SQL. Almacena las tablas `usuarios`, `personas`, `tarjetas_pendientes`, `dispositivos`, `registros_acceso`, `mediciones`, `limites`, `alertas` y `comandos`, además de la vista `personas_dentro`, que calcula en tiempo real qué personas tienen como último movimiento una `entrada` por dispositivo.
+3. **Capa de datos (MariaDB, compatible con MySQL — `aforo_iot`):**  
+   Base de datos relacional en MariaDB (puerto 3306 en `localhost`), accedida desde PHP mediante PDO con sentencias preparadas y usuario dedicado `aforo` para prevenir inyección SQL y evitar el uso de `root`. Almacena las tablas `usuarios`, `personas`, `tarjetas_pendientes`, `dispositivos`, `registros_acceso`, `mediciones`, `limites`, `alertas` y `comandos`, además de la vista `personas_dentro`, que calcula en tiempo real qué personas tienen como último movimiento una `entrada` por dispositivo.
 
 4. **Capa de presentación (Aplicación Android):**  
    Aplicación nativa desarrollada en Java con Volley para peticiones HTTP/JSON y componentes de Material Design 3 (`Theme.Material3.DayNight.NoActionBar`). Persiste el token de sesión en `SharedPreferences` y ofrece pantallas de inicio de sesión, tablero en vivo con refresco automático cada 5 s, lista de ocupantes, historial con selector de fechas, gestión de personas y dispositivos, configuración de límites, alertas con notificaciones locales, gráficas de 24 h (MPAndroidChart), botones de control remoto y exportación a CSV.
@@ -41,14 +41,14 @@ flowchart LR
         FW --> ACT
     end
 
-    subgraph API["Servidor Apache + PHP 8 (api_aforo)"]
+    subgraph API["Servidor PHP 8 integrado (php -S, puerto 8080) - /api_aforo/"]
         EP_ESP["esp32/* (acceso, medicion, comando)"]
         EP_AUTH["auth/* (registro, login, validar_token)"]
         EP_APP["app/* (estado, dentro, historial, personas, dispositivos, limites, alertas, comando, exportar)"]
     end
 
     subgraph DB["Base de datos"]
-        MYSQL[("MySQL: aforo_iot (PDO)")]
+        MARIADB[("MariaDB (compatible con MySQL): aforo_iot (PDO)")]
     end
 
     subgraph MOBILE["Cliente móvil"]
@@ -59,16 +59,16 @@ flowchart LR
     ANDROID -->|"HTTP JSON (credenciales)"| EP_AUTH
     ANDROID -->|"HTTP JSON (X-Token)"| EP_APP
 
-    EP_ESP --> MYSQL
-    EP_AUTH --> MYSQL
-    EP_APP --> MYSQL
+    EP_ESP --> MARIADB
+    EP_AUTH --> MARIADB
+    EP_APP --> MARIADB
 ```
 
 ---
 
 ## 2.3 Diagrama de despliegue
 
-Los tres nodos del sistema operan dentro de la misma red local WiFi (2.4 GHz, subred `192.168.x.x`). El servidor XAMPP ejecuta Apache en el puerto TCP `80` (expuesto a la LAN) y MySQL en el puerto TCP `3306` (acceso local desde PHP en `localhost`). Para pruebas en emulador Android Studio en el mismo equipo, la app utiliza el alias `10.0.2.2:80`.
+Los tres nodos del sistema operan dentro de la misma red local WiFi (2.4 GHz, subred `192.168.x.x`). La laptop servidor con Linux ejecuta el servidor PHP 8 integrado (`php -S 0.0.0.0:8080 -t backend`) en el puerto TCP `8080` (expuesto a la LAN) y MariaDB (compatible con MySQL) en el puerto TCP `3306` (acceso local desde PHP en `localhost`). Para pruebas en emulador Android Studio en el mismo equipo, la app utiliza el alias `10.0.2.2:8080`.
 
 ```mermaid
 flowchart TB
@@ -76,14 +76,14 @@ flowchart TB
         ESP32["ESP32 (192.168.x.a) - RC522, DHT22, LEDs y Buzzer"]
         PHONE["Teléfono Android (192.168.x.b) - App Aforo IoT"]
 
-        subgraph LAPTOP["Laptop servidor (192.168.x.50) - XAMPP"]
-            APACHE["Apache HTTP Server + PHP 8 (Puerto 80) - /api_aforo/"]
-            MYSQL[("MySQL Server (Puerto 3306, localhost) - aforo_iot")]
-            APACHE -->|"PDO / TCP 3306"| MYSQL
+        subgraph LAPTOP["Laptop servidor (192.168.x.50) - Linux"]
+            PHP["Servidor PHP 8 (php -S, puerto 8080) - /api_aforo/"]
+            MARIADB[("MariaDB (compatible con MySQL, puerto 3306, localhost) - aforo_iot")]
+            PHP -->|"PDO / TCP 3306"| MARIADB
         end
 
-        ESP32 -->|"HTTP POST/GET JSON (Puerto 80)"| APACHE
-        PHONE -->|"HTTP GET/POST JSON (Puerto 80)"| APACHE
+        ESP32 -->|"HTTP POST/GET JSON (Puerto 8080)"| PHP
+        PHONE -->|"HTTP GET/POST JSON (Puerto 8080)"| PHP
     end
 ```
 
@@ -116,9 +116,9 @@ De forma paralela, el ESP32 envía lecturas del DHT22 cada 15 s a `esp32/medicio
 | Firmware | Arduino IDE (C++ para ESP32) | Core ESP32 | Compilación y carga del firmware `esp32_aforo` |
 | Firmware | `ArduinoJson` | 7.x | Serialización y deserialización JSON en el ESP32 |
 | Firmware | `MFRC522` y `DHT sensor library` | Estables (Arduino Library Manager) | Controladores para lector RFID y sensor DHT22 |
-| Servidor web | XAMPP (Apache HTTP Server) | Puerto TCP 80 | Ejecución de la API REST en red local |
+| Servidor web | Servidor PHP 8 integrado (`php -S`) en Linux | Puerto TCP 8080 | Ejecución de la API REST en red local |
 | Backend | PHP | 8.x (PDO, `password_hash`, `password_verify`) | Lógica de negocio, autenticación y endpoints JSON |
-| Base de datos | MySQL (XAMPP / phpMyAdmin) | Puerto TCP 3306 (`aforo_iot`) | Persistencia relacional y vista `personas_dentro` |
+| Base de datos | MariaDB (compatible con MySQL, cliente `mariadb`) | Puerto TCP 3306 (`aforo_iot`, usuario `aforo`) | Persistencia relacional y vista `personas_dentro` |
 | App móvil | Android Studio / Java | Android 9+ (`network_security_config`) | Cliente móvil nativo (`com.example.aforoiot`) |
 | App móvil | Material Components for Android | `1.12.0` (`Theme.Material3.DayNight.NoActionBar`) | Interfaz Material Design 3 con modo claro y oscuro |
 | App móvil | Volley | Estándar Android | Cola de peticiones HTTP/JSON asíncronas |
@@ -129,15 +129,19 @@ De forma paralela, el ESP32 envía lecturas del DHT22 cada 15 s a `esp32/medicio
 
 ## 2.6 Decisiones de diseño
 
+### Servidor PHP integrado (`php -S`) en red local
+
+Se utiliza el servidor integrado de PHP 8 (`php -S 0.0.0.0:8080 -t backend`) en Linux por simplicidad de instalación y operación en la red local de demostración, sin requerir configuración adicional de servidores HTTP ni hosts virtuales. En un despliegue de producción, la API se ejecutaría detrás de Apache o Nginx.
+
 ### Polling HTTP frente a comunicación Push (WebSockets / MQTT / FCM)
 
-Se eligió **polling HTTP periódico** (cada 5 s en el tablero de la app, cada 3 s para comandos y cada 15 s para mediciones en el ESP32) en lugar de WebSockets, MQTT o Firebase Cloud Messaging. Esta decisión simplifica el despliegue sobre un servidor XAMPP estándar (Apache + PHP sin demonios persistentes ni brokers externos), reduce la superficie de fallos en una red local sin acceso obligatorio a servicios en la nube y ofrece una latencia máxima de 4–5 segundos, adecuada para el control de aforo y monitoreo ambiental del proyecto.
+Se eligió **polling HTTP periódico** (cada 5 s en el tablero de la app, cada 3 s para comandos y cada 15 s para mediciones en el ESP32) en lugar de WebSockets, MQTT o Firebase Cloud Messaging. Esta decisión simplifica el despliegue sobre el servidor PHP 8 integrado en Linux (sin demonios persistentes ni brokers externos), reduce la superficie de fallos en una red local sin acceso obligatorio a servicios en la nube y ofrece una latencia máxima de 4–5 segundos, adecuada para el control de aforo y monitoreo ambiental del proyecto.
 
 ### Autenticación con `api_key` frente a encabezado `X-Token`
 
 Se separaron los mecanismos de autenticación según el tipo de cliente:
 - El ESP32 envía una **`api_key` única por dispositivo** dentro del cuerpo JSON. Esto permite revocar o desactivar un nodo individual desde la app sin afectar a los usuarios humanos ni requerir flujos de login en el microcontrolador.
-- La aplicación Android utiliza un **token de sesión por usuario** enviado en el encabezado HTTP **`X-Token`**. Se eligió `X-Token` en lugar del encabezado estándar `Authorization` porque la configuración predeterminada de Apache en XAMPP suele filtrar o eliminar `Authorization` antes de llegar a PHP, evitando fallos de compatibilidad en distintos equipos del equipo de desarrollo.
+- La aplicación Android utiliza un **token de sesión por usuario** enviado en el encabezado HTTP **`X-Token`**. Se eligió `X-Token` en lugar del encabezado estándar `Authorization` porque algunos servidores y proxies no reenvían `Authorization` a PHP, mientras que `X-Token` funciona igual en todos los entornos del equipo de desarrollo.
 
 ### Alternancia entrada/salida controlada en el servidor
 

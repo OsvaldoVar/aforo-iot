@@ -61,7 +61,7 @@ create table RegistroAcceso (
   - `500 Internal Server Error`: fallo inesperado del servidor o base de datos.
 - **Fechas:** texto en formato `YYYY-MM-DD HH:MM:SS` (ej. `"2026-11-23 18:40:05"`).
 - **Autenticación:**
-  - **App Android (`app/*`):** cabecera HTTP `X-Token` (no usar `Authorization`, ya que Apache en XAMPP suele omitirla).
+  - **App Android (`app/*`):** cabecera HTTP `X-Token` (no usar `Authorization`, ya que algunos servidores y proxies no reenvían `Authorization` a PHP; `X-Token` funciona igual en todos).
   - **ESP32 (`esp32/*`):** `api_key` en el cuerpo JSON para `POST esp32/acceso.php` y `POST esp32/medicion.php`; para `GET esp32/comando.php`, enviar `api_key` como parámetro de consulta o cambiar el endpoint a `POST` en `docs/api.md` si se envía en el cuerpo.
 
 ```json
