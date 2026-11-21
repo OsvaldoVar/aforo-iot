@@ -5,8 +5,9 @@
 define('DB_HOST', 'localhost');
 define('DB_PORT', 3306);
 define('DB_NAME', 'aforo_iot');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+// Usuario de MariaDB creado en los pasos de instalación del README.
+define('DB_USER', 'aforo');
+define('DB_PASS', 'cambia-esta-clave');
 define('DB_CHARSET', 'utf8mb4');
 
 define('TOKEN_HORAS', 24);
