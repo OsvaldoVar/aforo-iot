@@ -1,5 +1,5 @@
 -- Datos de prueba iniciales para Aforo IoT
--- Importar despues de database/schema.sql
+-- Importar despues de database/schema.sql: sudo mariadb < database/seed.sql
 
 USE aforo_iot;
 

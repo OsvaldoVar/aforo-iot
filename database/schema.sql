@@ -1,5 +1,5 @@
 -- Esquema de base de datos para el sistema Aforo IoT
--- Compatible con MySQL 8.0+ y MariaDB 10.4+ (XAMPP / phpMyAdmin)
+-- Compatible con MariaDB 10.4+ y MySQL 8.0+. Importar con: sudo mariadb < database/schema.sql
 
 CREATE DATABASE IF NOT EXISTS aforo_iot
     CHARACTER SET utf8mb4
