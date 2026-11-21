@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <style name="Theme.AforoIoT" parent="Theme.Material3.DayNight.NoActionBar">
+  <style name="Base.Theme.AforoIoT" parent="Theme.Material3.DayNight.NoActionBar">
     <item name="colorPrimary">@color/primary</item>
     <item name="colorOnPrimary">@color/onPrimary</item>
     <item name="colorPrimaryContainer">@color/primaryContainer</item>
@@ -22,5 +22,9 @@
     <item name="colorSurfaceContainer">@color/surfaceContainer</item>
     <item name="colorOnSurfaceVariant">@color/onSurfaceVariant</item>
     <item name="colorOutline">@color/outline</item>
+    <item name="android:windowLightStatusBar">true</item>
+    <item name="android:windowLightNavigationBar">true</item>
   </style>
+
+  <style name="Theme.AforoIoT" parent="Base.Theme.AforoIoT" />
 </resources>
