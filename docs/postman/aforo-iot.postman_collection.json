@@ -7,7 +7,7 @@
   "variable": [
     {
       "key": "base_url",
-      "value": "http://localhost/api_aforo",
+      "value": "http://localhost:8080/api_aforo",
       "type": "string"
     },
     {

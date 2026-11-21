@@ -4,10 +4,7 @@ Pruebas automatizadas para los endpoints del Sprint 1 (`index.php`, `auth/regist
 
 ## Requisitos previos
 
-Antes de ejecutar las peticiones, asegúrate de tener levantado el servidor PHP/MySQL y de haber importado en tu base de datos:
-
-1. `database/schema.sql`
-2. `database/seed.sql`
+Antes de ejecutar las peticiones, asegúrate de importar con `sudo mariadb < database/schema.sql` y luego `sudo mariadb < database/seed.sql`. El servidor se levanta con `php -S 0.0.0.0:8080 -t backend` desde la raíz del repo.
 
 Los datos seed incluyen el usuario `admin@aforoiot.local` (`admin123`), el dispositivo con `api_key` `demo-esp32-key-0001` y la persona Ana (`A1B2C3D4`, inicialmente fuera).
 
@@ -21,9 +18,9 @@ Los datos seed incluyen el usuario `admin@aforoiot.local` (`admin123`), el dispo
 
 Abre la pestaña **Variables** de la colección y ajusta `base_url` según tu entorno:
 
-- **Servidor local en la misma PC:** `http://localhost/api_aforo`
-- **Emulador de Android:** `http://10.0.2.2/api_aforo`
-- **Red local (desde otro dispositivo o ESP32):** `http://<IP_DE_TU_PC>/api_aforo` (por ejemplo, `http://192.168.1.50/api_aforo`)
+- **Misma PC:** `http://localhost:8080/api_aforo`
+- **Emulador:** `http://10.0.2.2:8080/api_aforo`
+- **Celular:** `http://<IP-de-la-laptop>:8080/api_aforo` (por ejemplo, `http://192.168.1.50:8080/api_aforo`)
 
 La variable `api_key` viene precargada con `demo-esp32-key-0001` y `token` se llena automáticamente al ejecutar **Login OK**.
 
