@@ -70,10 +70,10 @@ Diseñar, implementar y validar un sistema IoT integral denominado **Aforo IoT**
 
 ### Supuestos
 
-- El servidor local (laptop con XAMPP), el microcontrolador ESP32 y el teléfono Android operan conectados a la misma red WiFi de 2.4 GHz.
+- El servidor local (laptop con Linux, PHP 8 y MariaDB), el microcontrolador ESP32 y el teléfono Android operan conectados a la misma red WiFi de 2.4 GHz.
 - Las tarjetas RFID utilizadas son compatibles con el estándar ISO/IEC 14443A soportado por el módulo RC522 y poseen identificadores (UID) únicos y estables.
 - Cada persona porta y presenta su propia tarjeta tanto al ingresar como al salir del espacio monitoreado.
-- El firewall del equipo servidor permite tráfico entrante en el puerto TCP 80 para los dispositivos de la red local.
+- El firewall del equipo servidor permite tráfico entrante en el puerto TCP 8080 para los dispositivos de la red local.
 
 ### Restricciones
 
