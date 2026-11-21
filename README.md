@@ -44,3 +44,9 @@ Se completará al final del proyecto.
 | OsvaldoVar | Administrador del repo, base de datos y API |
 | salazar5678-web | Firmware ESP32 y hardware |
 | OscarJDA | App Android |
+
+## Documentación
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) — Flujo de ramas, commits y PR
+- [docs/ESTANDARES.md](docs/ESTANDARES.md) — Reglas de código por área
+- [docs/ESTETICA.md](docs/ESTETICA.md) — Guía visual Material 3 y señalización de hardware
