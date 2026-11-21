@@ -1,0 +1,674 @@
+{
+  "info": {
+    "name": "Aforo IoT - Sprint 1",
+    "description": "Colección de pruebas para los endpoints del Sprint 1 de la API Aforo IoT (diagnóstico, autenticación y comunicación con ESP32).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080/api_aforo",
+      "type": "string"
+    },
+    {
+      "key": "api_key",
+      "value": "demo-esp32-key-0001",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "API",
+      "item": [
+        {
+          "name": "Estado de la API",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Respuesta con success true y campos de diagnóstico', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.servicio).to.eql('api_aforo');",
+                  "    pm.expect(json.version).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.configurado).to.be.a('boolean');",
+                  "    pm.expect(json.fecha_servidor).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/index.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "index.php"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Registro OK",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Usuario registrado con campos clave', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.usuario_id).to.be.a('number').and.be.above(0);",
+                  "    pm.expect(json.nombre).to.eql('Usuario Prueba');",
+                  "    pm.expect(json.correo).to.be.a('string').and.include('@');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Usuario Prueba\",\n  \"correo\": \"{{$randomEmail}}\",\n  \"password\": \"clave123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/registro.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "registro.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Registro sin campos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Respuesta con success false y mensaje de validación', function () {",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/registro.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "registro.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login OK",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Inicio de sesión exitoso con token y datos de usuario', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.token).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.nombre).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.rol).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.usuario_id).to.be.a('number').and.be.above(0);",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"admin@aforoiot.local\",\n  \"password\": \"admin123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login con contraseña errónea",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Credenciales inválidas devuelven success false sin token', function () {",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.token).to.be.undefined;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"admin@aforoiot.local\",\n  \"password\": \"clave_incorrecta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login.php"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ESP32",
+      "item": [
+        {
+          "name": "Medición OK",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Medición registrada con campos clave', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.medicion_id).to.be.a('number').and.be.above(0);",
+                  "    pm.expect(json.dispositivo_id).to.be.a('number').and.be.above(0);",
+                  "    pm.expect(json.temperatura).to.eql(24.5);",
+                  "    pm.expect(json.humedad).to.eql(55.2);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"api_key\": \"{{api_key}}\",\n  \"temperatura\": 24.5,\n  \"humedad\": 55.2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/esp32/medicion.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "medicion.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Medición sin api_key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Respuesta con success false por falta de api_key', function () {",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temperatura\": 24.5,\n  \"humedad\": 55.2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/esp32/medicion.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "medicion.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Medición con api_key inválida",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Respuesta con success false por dispositivo no autorizado', function () {",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"api_key\": \"clave-invalida-0000\",\n  \"temperatura\": 24.5,\n  \"humedad\": 55.2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/esp32/medicion.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "medicion.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Medición con valores no numéricos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Respuesta con success false por valores no numéricos', function () {",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"api_key\": \"{{api_key}}\",\n  \"temperatura\": \"caliente\",\n  \"humedad\": \"alta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/esp32/medicion.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "medicion.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Acceso Ana 1a vez (Entrada)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Entrada registrada para Ana y aforo actualizado', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.tipo).to.eql('entrada');",
+                  "    pm.expect(json.nombre).to.be.a('string').and.include('Ana');",
+                  "    pm.expect(json.dentro).to.be.a('number').and.be.at.least(1);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"api_key\": \"{{api_key}}\",\n  \"uid\": \"A1B2C3D4\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/esp32/acceso.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "acceso.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Acceso Ana 2a vez (Salida)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Salida registrada para Ana tras la entrada previa', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.tipo).to.eql('salida');",
+                  "    pm.expect(json.nombre).to.be.a('string').and.include('Ana');",
+                  "    pm.expect(json.dentro).to.be.a('number').and.be.at.least(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"api_key\": \"{{api_key}}\",\n  \"uid\": \"A1B2C3D4\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/esp32/acceso.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "acceso.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Acceso tarjeta desconocida",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Tarjeta no registrada devuelve success false y error tarjeta_no_registrada', function () {",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.error).to.eql('tarjeta_no_registrada');",
+                  "    pm.expect(json.uid).to.eql('FFFFFFFF');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"api_key\": \"{{api_key}}\",\n  \"uid\": \"FFFFFFFF\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/esp32/acceso.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "acceso.php"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
