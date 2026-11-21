@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Roles Material 3 en modo claro (docs/ESTETICA.md) -->
+  <color name="primary">#00639B</color>
+  <color name="onPrimary">#FFFFFF</color>
+  <color name="primaryContainer">#CEE5FF</color>
+  <color name="onPrimaryContainer">#001D33</color>
+  <color name="secondary">#51606F</color>
+  <color name="onSecondary">#FFFFFF</color>
+  <color name="secondaryContainer">#D5E4F7</color>
+  <color name="onSecondaryContainer">#0E1D2A</color>
+  <color name="tertiary">#68587A</color>
+  <color name="onTertiary">#FFFFFF</color>
+  <color name="tertiaryContainer">#EEDBFF</color>
+  <color name="onTertiaryContainer">#231533</color>
+  <color name="error">#BA1A1A</color>
+  <color name="onError">#FFFFFF</color>
+  <color name="errorContainer">#FFDAD6</color>
+  <color name="onErrorContainer">#410002</color>
+  <color name="surface">#F7F9FF</color>
+  <color name="onSurface">#181C20</color>
+  <color name="surfaceContainer">#ECEEF4</color>
+  <color name="onSurfaceVariant">#42474E</color>
+  <color name="outline">#72777F</color>
+
+  <!-- Estados semánticos -->
+  <color name="statusOnlineContainer">#D7F5DF</color>
+  <color name="statusOnline">#0B4F24</color>
+  <color name="statusWarningContainer">#FFE8C2</color>
+  <color name="statusWarning">#4A2E00</color>
+
+  <color name="ic_launcher_background">#00639B</color>
+</resources>

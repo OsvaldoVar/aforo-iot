@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">Aforo IoT</string>
+  <string name="logo_descripcion">Logotipo de Aforo IoT</string>
+  <string name="proyecto_listo">Proyecto Android listo · Material 3</string>
+</resources>
