@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="412" height="915" viewBox="0 0 412 915" font-family="Roboto, 'Segoe UI', Arial, sans-serif">
+  <rect width="412" height="915" fill="#F7F9FF"/>
+
+  <!-- barra de estado -->
+  <text x="16" y="17" font-size="12" fill="#42474E">9:41</text>
+  <g fill="#42474E">
+    <rect x="338" y="12" width="3" height="4" rx="1"/>
+    <rect x="343" y="10" width="3" height="6" rx="1"/>
+    <rect x="348" y="8" width="3" height="8" rx="1"/>
+    <rect x="353" y="6" width="3" height="10" rx="1"/>
+  </g>
+  <rect x="366" y="6" width="18" height="10" rx="3" fill="none" stroke="#42474E" stroke-width="1.5"/>
+  <rect x="368" y="8" width="12" height="6" rx="1.5" fill="#42474E"/>
+  <rect x="385" y="9" width="2" height="4" rx="1" fill="#42474E"/>
+
+  <!-- barra superior -->
+  <text x="16" y="62" font-size="20" font-weight="500" fill="#181C20">Personas</text>
+  <path d="M370 50a8 8 0 0 1 0 12M376 45a15 15 0 0 1 0 22" fill="none" stroke="#42474E" stroke-width="1.8" stroke-linecap="round"/>
+  <rect x="364" y="52" width="6" height="8" rx="1.5" fill="#42474E"/>
+
+  <!-- resumen -->
+  <rect x="16" y="104" width="116" height="32" rx="8" fill="#D7F5DF"/>
+  <circle cx="32" cy="120" r="4" fill="#0B4F24"/>
+  <text x="44" y="124" font-size="12" font-weight="500" fill="#0B4F24">3 dentro</text>
+  <text x="396" y="124" text-anchor="end" font-size="12" fill="#42474E">Aforo máximo 10</text>
+
+  <!-- personas dentro -->
+  <rect x="16" y="152" width="380" height="76" rx="12" fill="#ECEEF4"/>
+  <circle cx="54" cy="190" r="20" fill="#CEE5FF"/>
+  <text x="54" y="195" text-anchor="middle" font-size="12" font-weight="500" fill="#001D33">AL</text>
+  <text x="86" y="184" font-size="14" font-weight="500" fill="#181C20">Ana López</text>
+  <text x="86" y="204" font-size="12" fill="#42474E">Dentro desde 10:15 · RFID A1B2C3D4</text>
+  <path d="M368 181a6 6 0 0 1 0 9M374 177a11 11 0 0 1 0 17" fill="none" stroke="#42474E" stroke-width="1.6" stroke-linecap="round"/>
+
+  <rect x="16" y="240" width="380" height="76" rx="12" fill="#ECEEF4"/>
+  <circle cx="54" cy="278" r="20" fill="#CEE5FF"/>
+  <text x="54" y="283" text-anchor="middle" font-size="12" font-weight="500" fill="#001D33">LP</text>
+  <text x="86" y="272" font-size="14" font-weight="500" fill="#181C20">Luis Pérez</text>
+  <text x="86" y="292" font-size="12" fill="#42474E">Dentro desde 09:40 · RFID B2C3D4E5</text>
+  <path d="M368 269a6 6 0 0 1 0 9M374 265a11 11 0 0 1 0 17" fill="none" stroke="#42474E" stroke-width="1.6" stroke-linecap="round"/>
+
+  <rect x="16" y="328" width="380" height="76" rx="12" fill="#ECEEF4"/>
+  <circle cx="54" cy="366" r="20" fill="#CEE5FF"/>
+  <text x="54" y="371" text-anchor="middle" font-size="12" font-weight="500" fill="#001D33">MR</text>
+  <text x="86" y="360" font-size="14" font-weight="500" fill="#181C20">María Ruiz</text>
+  <text x="86" y="380" font-size="12" fill="#42474E">Dentro desde 09:12 · RFID C3D4E5F6</text>
+  <path d="M368 357a6 6 0 0 1 0 9M374 353a11 11 0 0 1 0 17" fill="none" stroke="#42474E" stroke-width="1.6" stroke-linecap="round"/>
+
+  <!-- tarjeta pendiente -->
+  <text x="16" y="448" font-size="16" font-weight="500" fill="#181C20">Tarjetas pendientes</text>
+  <rect x="16" y="464" width="380" height="88" rx="12" fill="#ECEEF4"/>
+  <rect x="16" y="464" width="4" height="88" rx="2" fill="#00639B"/>
+  <text x="36" y="494" font-size="14" font-weight="500" fill="#181C20">Tarjeta sin asignar</text>
+  <text x="36" y="514" font-size="12" fill="#42474E">UID D4E5F6A7 · leída hoy a las 10:02</text>
+  <rect x="292" y="486" width="88" height="32" rx="16" fill="#00639B"/>
+  <text x="336" y="506" text-anchor="middle" font-size="12" font-weight="500" fill="#FFFFFF">Asignar</text>
+
+  <text x="16" y="588" font-size="12" fill="#42474E">Primera lectura abre la tarjeta; la segunda la asigna.</text>
+
+  <!-- FAB -->
+  <circle cx="368" cy="783" r="28" fill="#CEE5FF"/>
+  <path d="M368 771v24M356 783h24" stroke="#001D33" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- navegación inferior -->
+  <path d="M0 835h412v80H0z" fill="#ECEEF4"/>
+  <rect x="0" y="835" width="412" height="1" fill="#D5E4F7"/>
+
+  <g fill="none" stroke="#42474E" stroke-width="1.7">
+    <rect x="42" y="858" width="8" height="8" rx="2"/>
+    <rect x="53" y="858" width="8" height="8" rx="2"/>
+    <rect x="42" y="869" width="8" height="8" rx="2"/>
+    <rect x="53" y="869" width="8" height="8" rx="2"/>
+  </g>
+  <text x="51.5" y="899" text-anchor="middle" font-size="11" fill="#42474E">Dashboard</text>
+
+  <g fill="none" stroke="#42474E" stroke-width="1.7">
+    <circle cx="154.5" cy="868" r="9"/>
+    <path d="M154.5 863v5l3 2" stroke-linecap="round"/>
+  </g>
+  <text x="154.5" y="899" text-anchor="middle" font-size="11" fill="#42474E">Historial</text>
+
+  <rect x="225.5" y="852" width="64" height="32" rx="16" fill="#CEE5FF"/>
+  <g fill="none" stroke="#00639B" stroke-width="1.7">
+    <circle cx="257.5" cy="864" r="4.5"/>
+    <path d="M248 877c0-5 4-8 9.5-8s9.5 3 9.5 8" stroke-linecap="round"/>
+  </g>
+  <text x="257.5" y="899" text-anchor="middle" font-size="11" font-weight="500" fill="#00639B">Personas</text>
+
+  <g fill="#42474E">
+    <circle cx="352" cy="868" r="1.6"/>
+    <circle cx="360.5" cy="868" r="1.6"/>
+    <circle cx="369" cy="868" r="1.6"/>
+  </g>
+  <text x="360.5" y="899" text-anchor="middle" font-size="11" fill="#42474E">Más</text>
+</svg>
