@@ -7,7 +7,7 @@
 | # | Sección del expediente | Responsable | Sprint | Documento / Ubicación | Estado |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Portada, resumen ejecutivo, problema, justificación, objetivos y alcance | A (OsvaldoVar) | Fase 0 | [01-problema-objetivos.md](./01-problema-objetivos.md) | Disponible |
-| 2 | Usuarios, requerimientos funcionales y no funcionales, casos de uso UML | C (OscarJDA) | Sprint 1 | — | Pendiente |
+| 2 | Usuarios, requerimientos funcionales y no funcionales, casos de uso UML | C (OscarJDA) | Sprint 1 | [03-requerimientos-casos-uso.md](./03-requerimientos-casos-uso.md) | Disponible |
 | 3 | Arquitectura del sistema y diagrama de despliegue | A (OsvaldoVar) | Sprint 1 | [02-arquitectura.md](./02-arquitectura.md) | Disponible |
 | 4 | Diagrama de conexiones del hardware | B (salazar5678-web) | Sprint 1 | `docs/hardware/` | Pendiente |
 | 5 | Modelo de datos (diagrama ER en S2) y documentación de endpoints (`docs/api.md`, cierre en S3) | A (OsvaldoVar) | Sprint 2–3 | `docs/api.md` | Pendiente |
