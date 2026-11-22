@@ -2,7 +2,6 @@
 <resources>
   <string name="app_name">Aforo IoT</string>
   <string name="logo_descripcion">Logotipo de Aforo IoT</string>
-  <string name="proyecto_listo">Proyecto Android listo · Material 3</string>
 
   <string name="login_subtitulo">Control de acceso RFID y clima</string>
   <string name="registro_subtitulo">Crea tu cuenta para administrar el aforo</string>
@@ -21,4 +20,17 @@
   <string name="cuenta_creada">Cuenta creada. Ya puedes iniciar sesión.</string>
   <string name="error_conexion">No se pudo conectar con el servidor</string>
   <string name="error_servidor">Ocurrió un error, intenta de nuevo</string>
+
+  <string name="menu_dashboard">Dashboard</string>
+  <string name="menu_historial">Historial</string>
+  <string name="menu_personas">Personas</string>
+  <string name="menu_mas">Más</string>
+  <string name="cerrar_sesion">Cerrar sesión</string>
+  <string name="cerrar_sesion_confirmacion">¿Seguro que quieres cerrar la sesión?</string>
+  <string name="cancelar">Cancelar</string>
+
+  <string name="vacio_dashboard">El aforo y el clima estarán disponibles en el Sprint 2.</string>
+  <string name="vacio_historial">Aquí verás los accesos y las mediciones.</string>
+  <string name="vacio_personas">Aquí verás las personas dentro y las tarjetas pendientes.</string>
+  <string name="vacio_mas">Dispositivos, alertas, límites y gráficas.</string>
 </resources>
