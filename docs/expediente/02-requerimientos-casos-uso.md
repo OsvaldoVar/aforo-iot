@@ -30,7 +30,7 @@ Los requerimientos funcionales definen el comportamiento esperado en las cuatro 
 | **RF01** | Registro, autenticación y gestión de sesión de usuarios | App Android, API (`auth/*`), BD (`usuarios`) | Alta | Sprint 1 |
 | **RF02** | Administración de dispositivos ESP32, personas y tarjetas pendientes | App Android, API (`app/dispositivos.php`, `app/personas.php`), BD (`dispositivos`, `personas`, `tarjetas_pendientes`) | Alta | Sprint 2 |
 | **RF03** | Adquisición de lecturas RFID y mediciones ambientales en el nodo IoT | Firmware ESP32, API (`esp32/acceso.php`, `esp32/medicion.php`), BD (`mediciones`) | Alta | Sprint 1–2 |
-| **RF04** | Control de acceso con alternancia entrada/salida y validación de aforo máximo | API (`esp32/acceso.php`), BD (`registros_acceso`, `limites`, `personas_dentro`, `alertas`), Firmware ESP32 | Alta | Sprint 1–2 |
+| **RF04** | Control de acceso con alternancia entrada/salida y validación de aforo máximo | API (`esp32/acceso.php`), BD (`registros_acceso`, `limites`, `personas_dentro`, `alertas`), Firmware ESP32 | Alta | Sprint 1–3 |
 | **RF05** | Monitoreo en tiempo real en el Dashboard móvil | App Android (`DashboardActivity`), API (`app/estado.php`, `app/dentro.php`), BD (`personas_dentro`, `mediciones`, `dispositivos`) | Alta | Sprint 2 |
 | **RF06** | Configuración de límites y gestión de alertas con notificaciones | App Android (`LimitesActivity`, `AlertasActivity`), API (`app/limites.php`, `app/alertas.php`), BD (`limites`, `alertas`) | Alta | Sprint 2–3 |
 | **RF07** | Control remoto bidireccional hacia el ESP32 (`abrir_acceso` y `alarma`) | App Android (`DashboardActivity`), API (`app/comando.php`, `esp32/comando.php`), BD (`comandos`), Firmware ESP32 | Alta | Sprint 3 |
