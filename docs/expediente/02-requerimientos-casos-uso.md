@@ -1,4 +1,4 @@
-# 3. Usuarios, requerimientos y casos de uso
+# 2. Usuarios, requerimientos y casos de uso
 
 **Proyecto:** Aforo IoT — Sistema de control de acceso con RFID y monitoreo ambiental
 **Fecha:** Noviembre de 2026
@@ -6,7 +6,7 @@
 
 ---
 
-## 3.1 Perfiles de usuario y actores del sistema
+## 2.1 Perfiles de usuario y actores del sistema
 
 El sistema **Aforo IoT** involucra cuatro actores diferenciados por su rol operativo, nivel de privilegios y canal de interacción (aplicación móvil Android, interacción física con el nodo IoT o comunicación máquina a máquina con la API REST):
 
@@ -19,7 +19,7 @@ El sistema **Aforo IoT** involucra cuatro actores diferenciados por su rol opera
 
 ---
 
-## 3.2 Requerimientos funcionales (RF)
+## 2.2 Requerimientos funcionales (RF)
 
 Los requerimientos funcionales definen el comportamiento esperado en las cuatro capas del sistema (nodo ESP32, API REST en PHP 8, base de datos MariaDB/MySQL y aplicación Android):
 
@@ -41,7 +41,7 @@ Los requerimientos funcionales definen el comportamiento esperado en las cuatro 
 #### RF01 — Registro, autenticación y gestión de sesión de usuarios
 - **RF01.1 (Registro de cuenta):** El sistema debe permitir el registro de nuevos usuarios desde `RegistroActivity` enviando `nombre`, `correo` y `password` a `POST auth/registro.php`, validando formato de correo, longitud mínima de contraseña (6 caracteres), unicidad de `correo` en la tabla `usuarios` y almacenando el hash generado con `password_hash()`.
 - **RF01.2 (Inicio de sesión):** El sistema debe autenticar al usuario desde `LoginActivity` mediante `POST auth/login.php` verificando la contraseña con `password_verify()`, generando un token aleatorio seguro de 64 caracteres hexadecimales (`random_bytes(32)`) almacenado en `usuarios.token` y devolviendo los datos del usuario junto con el token.
-- **RF01.3 (Persistencia y cierre de sesión):** La aplicación Android debe persistir el token, nombre, correo y rol del usuario en `SharedPreferences` a través de `SessionManager`, redirigir automáticamente a la pantalla principal al reabrir la app si existe sesión activa, enviar el encabezado `X-Token` en toda petición a `app/*` y permitir cerrar sesión limpiando `SharedPreferences` y regresando a `LoginActivity`.
+- **RF01.3 (Persistencia y cierre de sesión):** La aplicación Android debe persistir el token y el nombre del usuario en `SharedPreferences` a través de `SessionManager`, redirigir automáticamente a la pantalla principal al reabrir la app si existe sesión activa, enviar el encabezado `X-Token` en toda petición a `app/*` y permitir cerrar sesión limpiando `SharedPreferences` y regresando a `LoginActivity`.
 
 #### RF02 — Administración de dispositivos ESP32, personas y tarjetas pendientes
 - **RF02.1 (Gestión de dispositivos):** El sistema debe permitir listar los nodos ESP32 registrados indicando su nombre, ubicación, `api_key`, fecha de `ultima_conexion`, indicador `en_linea` y `aforo_max`, así como dar de alta nuevos dispositivos (creando automáticamente sus límites iniciales en `limites`), copiar su `api_key` al portapapeles y activar o desactivar nodos desde `DispositivosActivity` (`app/dispositivos.php`).
@@ -78,7 +78,7 @@ Los requerimientos funcionales definen el comportamiento esperado en las cuatro 
 
 ---
 
-## 3.3 Requerimientos no funcionales (RNF)
+## 2.3 Requerimientos no funcionales (RNF)
 
 | Código | Categoría | Especificación y criterio de verificación |
 | --- | --- | --- |
@@ -86,14 +86,14 @@ Los requerimientos funcionales definen el comportamiento esperado en las cuatro 
 | **RNF02** | **Seguridad** | • Las contraseñas de usuarios nunca se almacenan ni registran en texto plano; se procesan con `password_hash()` y `password_verify()`.<br>• Todas las consultas SQL en PHP utilizan **PDO con sentencias preparadas** (`prepare` + `execute`) y un usuario de base de datos dedicado (`aforo`), prohibiendo la concatenación de entradas y el uso de `root`.<br>• Autenticación segregada: encabezado HTTP `X-Token` para endpoints `app/*` y clave `api_key` por dispositivo para endpoints `esp32/*`.<br>• Ningún archivo de credenciales (`config.php`, `config.h`, `.env`) se versiona en Git (excluidos en `.gitignore`). Los errores internos (`PDOException`) se registran con `error_log()` sin exponer trazas ni SQL al cliente. |
 | **RNF03** | **Usabilidad y diseño Material 3** | • Aplicación Android construida con **Material Components `1.12.0`** y tema `Theme.Material3.DayNight.NoActionBar` (soporte completo para modo claro y oscuro con color semilla `#00639B`).<br>• Contraste visual mínimo de **4.5:1** en texto normal y **3:1** en texto grande e íconos (los pares definidos en `docs/ESTETICA.md` superan **6.4:1**).<br>• Áreas táctiles mínimas de **`48dp × 48dp`**, navegación inferior de 4 destinos (`BottomNavigationView`), barra superior `MaterialToolbar`, mensajes mediante `Snackbar` (sin `Toast`), confirmaciones con `MaterialAlertDialog` y estados explícitos de carga, vacío y error con opción de reintento. |
 | **RNF04** | **Confiabilidad y tolerancia a fallos** | • El firmware del ESP32 opera sin `delay()` bloqueantes en `loop()`, empleando `millis()` para que la señalización LED/buzzer y las peticiones HTTP no interrumpan la lectura de tarjetas RC522.<br>• El nodo IoT descarta lecturas `NaN` del sensor DHT22 sin colgarse y reintenta automáticamente la conexión WiFi ante desconexiones.<br>• El estado de quién se encuentra dentro reside en la base de datos del servidor (vista `personas_dentro`), por lo que un corte eléctrico o reinicio del ESP32 no provoca pérdida ni desincronización del aforo.<br>• La app Android captura fallos de red o JSON malformado sin cerrarse inesperadamente y redirige a `LoginActivity` si recibe HTTP `401`. |
-| **RNF05** | **Compatibilidad y entorno** | • **App móvil:** Android 9.0 (API 28) o superior en Java, con `network_security_config.xml` habilitado para tráfico HTTP hacia la red local (`192.168.x.x` y `10.0.2.2` en emulador).<br>• **Servidor:** PHP 8.x (`pdo_mysql`) sobre servidor integrado (`php -S 0.0.0.0:8080 -t backend`) o Apache/XAMPP, y MariaDB 10.4+ / MySQL 8.0+.<br>• **Hardware:** ESP32 en red WiFi de 2.4 GHz; lector RC522 alimentado estrictamente a **3.3 V**; LEDs con resistencias limitadoras de **220 Ω**. |
+| **RNF05** | **Compatibilidad y entorno** | • **App móvil:** Android 7.0 (API 24) o superior en Java, con `network_security_config.xml` que permite tráfico HTTP en claro hacia la red local (IP variable por DHCP y `10.0.2.2` en el emulador).<br>• **Servidor:** PHP 8.x (`pdo_mysql`) sobre servidor integrado (`php -S 0.0.0.0:8080 -t backend`) o Apache/XAMPP, y MariaDB 10.4+ / MySQL 8.0+.<br>• **Hardware:** ESP32 en red WiFi de 2.4 GHz; lector RC522 alimentado estrictamente a **3.3 V**; LEDs con resistencias limitadoras de **220 Ω**. |
 | **RNF06** | **Mantenibilidad y estándares** | • Cumplimiento de `docs/ESTANDARES.md` y `.editorconfig` (codificación UTF-8, saltos de línea `LF`, identificadores en español sin acentos, textos de UI en `res/values/strings.xml` y colores por atributos `?attr/...`).<br>• Desarrollo bajo flujo Git Flow ligero (`main`, `develop`, ramas `feature/<ID>-<tema>`) con revisión por Pull Request antes de integrar. |
 
 ---
 
-## 3.4 Diagrama de casos de uso UML
+## 2.4 Diagrama de casos de uso UML
 
-El siguiente diagrama representa los actores del sistema, el límite de **Aforo IoT** y las relaciones entre los casos de uso (`CU01`–`CU11`), incluyendo dependencias `<<include>>` y extensiones `<<extend>>`:
+El siguiente diagrama representa los actores del sistema, el límite de **Aforo IoT** y las relaciones entre los casos de uso (`CU01`–`CU12`), incluyendo dependencias `<<include>>` entre casos de uso:
 
 ```mermaid
 flowchart LR
@@ -111,9 +111,9 @@ flowchart LR
 
         subgraph SUB_ACCESO["Control de acceso físico y telemetría IoT"]
             CU01(["CU01: Registrar acceso con tarjeta RFID<br/>(alternancia entrada/salida)"])
-            CU02(["CU02: Validar aforo máximo y<br/>registrar tarjeta pendiente"])
+            CU02(["CU02: Validar aforo máximo"])
             CU03(["CU03: Reportar medición periódica<br/>de temperatura y humedad"])
-            CU04(["CU04: Evaluar umbrales y<br/>generar alerta automática"])
+            CU04(["CU04: Evaluar umbrales ambientales<br/>(genera alerta si se supera)"])
             CU11(["CU11: Consultar y ejecutar<br/>comandos remotos en ESP32"])
         end
 
@@ -126,7 +126,8 @@ flowchart LR
         subgraph SUB_ADMIN["Administración, alertas y control remoto"]
             CU08(["CU08: Gestionar personas y<br/>asignar tarjetas RFID pendientes"])
             CU09(["CU09: Gestionar dispositivos ESP32<br/>y configurar límites (aforo/temp/hum)"])
-            CU10(["CU10: Atender alertas y enviar comandos<br/>remotos (abrir acceso / alarma)"])
+            CU10(["CU10: Atender alertas"])
+            CU12(["CU12: Enviar comando remoto<br/>(abrir acceso / alarma)"])
         end
     end
 
@@ -143,17 +144,17 @@ flowchart LR
     ADMIN --> CU08
     ADMIN --> CU09
     ADMIN --> CU10
+    ADMIN --> CU12
 
-    %% Relaciones <<include>> y <<extend>> internas
+    %% Relaciones <<include>> internas
     CU01 -.->|"&lt;&lt;include&gt;&gt;"| CU02
-    CU02 -.->|"&lt;&lt;extend&gt;&gt;<br/>[aforo lleno]"| CU04
     CU03 -.->|"&lt;&lt;include&gt;&gt;"| CU04
-    CU10 -.->|"&lt;&lt;include&gt;&gt;<br/>[encola comando]"| CU11
+    CU12 -.->|"&lt;&lt;include&gt;&gt;"| CU11
 ```
 
 ---
 
-## 3.5 Especificación de casos de uso
+## 2.5 Especificación de casos de uso
 
 A continuación se documentan las fichas técnicas de los casos de uso del sistema:
 
@@ -166,20 +167,20 @@ A continuación se documentan las fichas técnicas de los casos de uso del siste
 | **Requerimientos** | `RF03`, `RF04`, `RNF01`, `RNF02`, `RNF04` |
 | **Precondiciones** | 1. El nodo ESP32 está encendido, conectado a la red WiFi local y posee una `api_key` activa en la tabla `dispositivos`.<br>2. Han transcurrido al menos 3 segundos desde la última lectura de la misma tarjeta en el lector RC522. |
 | **Flujo principal (Exitoso)** | 1. El ocupante acerca su tarjeta RFID al lector RC522 del ESP32.<br>2. El ESP32 obtiene el UID en hexadecimal mayúsculas, verifica el antirrebote de 3 s y envía `POST esp32/acceso.php` con `{"api_key": "...", "uid": "..."}`.<br>3. La API valida la `api_key`, actualiza `dispositivos.ultima_conexion = NOW()` y busca el UID en `personas` (`activo = 1`).<br>4. La API consulta el último registro de esa persona en `registros_acceso` para el dispositivo: si fue `entrada`, determina `tipo = 'salida'`; en caso contrario, determina `tipo = 'entrada'`.<br>5. Si es `entrada`, la API verifica en la vista `personas_dentro` que `dentro < limites.aforo_max`.<br>6. La API inserta el movimiento en `registros_acceso` y responde HTTP `200` con `{"success": true, "tipo": "entrada|salida", "nombre": "...", "dentro": N}`.<br>7. El ESP32 enciende el `LED_VERDE` durante `1500 ms` indicando acceso autorizado. |
-| **Flujos alternativos** | **FA1 — Tarjeta no registrada (`uid` no existe en `personas`):** En el paso 3, la API inserta o actualiza el UID en `tarjetas_pendientes` para ese `dispositivo_id` y responde `{"success": false, "error": "tarjeta_no_registrada"}`. El ESP32 enciende el `LED_ROJO` por `1500 ms` y emite 3 pitidos cortos (`100 ms`) en el buzzer.<br>**FA2 — Aforo máximo alcanzado (`dentro >= aforo_max` en una entrada):** En el paso 5, la API rechaza la entrada sin insertar en `registros_acceso`, dispara **CU04** insertando una alerta de tipo `aforo` en `alertas` y responde `{"success": false, "error": "aforo_lleno", "dentro": N}`. El ESP32 enciende el `LED_ROJO` por `1500 ms` y emite 2 pitidos largos (`300 ms`).<br>**FA3 — Salida con aforo al límite:** Si el cálculo del paso 4 determina `salida`, el paso 5 se omite y la salida se registra siempre con éxito (`LED_VERDE`). |
+| **Flujos alternativos** | **FA1 — Tarjeta no registrada (`uid` no existe en `personas`):** En el paso 3, la API inserta o actualiza el UID en `tarjetas_pendientes` para ese `dispositivo_id` y responde `{"success": false, "error": "tarjeta_no_registrada"}`. El ESP32 enciende el `LED_ROJO` por `1500 ms` y emite 3 pitidos cortos (`100 ms`) en el buzzer.<br>**FA2 — Aforo máximo alcanzado (`dentro >= aforo_max` en una entrada):** En el paso 5, la API rechaza la entrada sin insertar en `registros_acceso`, registra una alerta de tipo `aforo` en `alertas` y responde `{"success": false, "error": "aforo_lleno", "dentro": N}`. El ESP32 enciende el `LED_ROJO` por `1500 ms` y emite 2 pitidos largos (`300 ms`).<br>**FA3 — Salida con aforo al límite:** Si el cálculo del paso 4 determina `salida`, el paso 5 se omite y la salida se registra siempre con éxito (`LED_VERDE`). |
 | **Postcondiciones** | Se registra el movimiento en `registros_acceso` (actualizando la vista `personas_dentro`), o bien se registra la tarjeta en `tarjetas_pendientes` / la alerta de aforo en `alertas`, y se actualiza `ultima_conexion` del dispositivo. |
 
 ---
 
-### CU03 — Reportar medición periódica de temperatura y humedad y CU04 — Evaluar umbrales y generar alerta
+### CU03 — Reportar medición periódica de temperatura y humedad y CU04 — Evaluar umbrales ambientales
 
 | Campo | Descripción |
 | --- | --- |
-| **ID y nombre** | **CU03 / CU04** — Reportar medición ambiental y generar alerta automática por exceso de umbral |
+| **ID y nombre** | **CU03 / CU04** — Reportar medición ambiental y evaluar umbrales ambientales |
 | **Actor** | **Nodo IoT ESP32** (disparo automático por temporizador cada 15 s) |
 | **Requerimientos** | `RF03`, `RF06`, `RNF01`, `RNF04` |
 | **Precondiciones** | El ESP32 está conectado a la red WiFi y el temporizador no bloqueante (`millis()`) alcanza `INTERVALO_MEDICION` (`15000 ms`). |
-| **Flujo principal** | 1. El ESP32 solicita temperatura (°C) y humedad relativa (%) al sensor DHT22.<br>2. El firmware comprueba que ambos valores sean numéricos válidos (`!isnan(t) && !isnan(h)`) y envía `POST esp32/medicion.php` con `{"api_key": "...", "temperatura": t, "humedad": h}`.<br>3. La API valida `api_key`, verifica que los valores estén dentro del rango físico válido (`0–60 °C` y `0–100 %`), actualiza `ultima_conexion = NOW()` e inserta la fila en `mediciones`.<br>4. La API consulta `limites` del dispositivo (`temp_max`, `hum_max`). Si algún valor supera su límite, ejecuta **CU04** insertando la alerta correspondiente (`tipo = 'temperatura'` o `tipo = 'humedad'`, `atendida = 0`) en la tabla `alertas`.<br>5. La API responde HTTP `200` con `{"success": true, "alerta": true|false}`. |
+| **Flujo principal** | 1. El ESP32 solicita temperatura (°C) y humedad relativa (%) al sensor DHT22.<br>2. El firmware comprueba que ambos valores sean numéricos válidos (`!isnan(t) && !isnan(h)`) y envía `POST esp32/medicion.php` con `{"api_key": "...", "temperatura": t, "humedad": h}`.<br>3. La API valida `api_key`, verifica que los valores estén dentro del rango físico válido (`0–60 °C` y `0–100 %`), actualiza `ultima_conexion = NOW()` e inserta la fila en `mediciones`.<br>4. La API consulta `limites` del dispositivo (`temp_max`, `hum_max`). Si algún valor supera su límite, inserta la alerta correspondiente (`tipo = 'temperatura'` o `tipo = 'humedad'`, `atendida = 0`) en la tabla `alertas` (RF06).<br>5. La API responde HTTP `200` con `{"success": true, "medicion_id": N, "dispositivo_id": N, "temperatura": t, "humedad": h}`. |
 | **Flujos alternativos** | **FA1 — Lectura `NaN` del sensor DHT22:** En el paso 2, el firmware descarta la lectura, registra el aviso en el monitor serie (`115200` baudios), no envía petición HTTP y continúa ejecutando `loop()` sin bloquear el lector RC522.<br>**FA2 — Valores fuera de rango físico:** En el paso 3, la API responde HTTP `400 Bad Request` y no contamina la tabla `mediciones`. |
 | **Postcondiciones** | Nueva medición almacenada en `mediciones`, `ultima_conexion` actualizada y, en caso de exceso de umbral, alerta activa creada en `alertas`. |
 
@@ -193,8 +194,8 @@ A continuación se documentan las fichas técnicas de los casos de uso del siste
 | **Actores** | **Usuario Operador** y **Administrador** |
 | **Requerimientos** | `RF01`, `RNF02`, `RNF03` |
 | **Precondiciones** | La aplicación Android tiene conectividad HTTP con el servidor PHP en la red local (`Config.BASE_URL`). |
-| **Flujo principal** | 1. Al abrir la app, `LoginActivity` verifica `SessionManager.haySesion()`. Si no hay token guardado, presenta el formulario Material 3 (`tilCorreo`, `tilPassword`, `btnLogin`).<br>2. El usuario ingresa su correo y contraseña (o accede a `RegistroActivity` para crear una cuenta nueva mediante `POST auth/registro.php`).<br>3. La app valida que los campos no estén vacíos y envía `POST auth/login.php` con Volley.<br>4. La API verifica las credenciales con `password_verify()`, genera y guarda `usuarios.token` y devuelve `{"success": true, "token": "...", "usuario": {...}}`.<br>5. La app guarda la sesión en `SharedPreferences` mediante `SessionManager.guardarSesion(...)` y navega a la pantalla principal.<br>6. Cuando el usuario selecciona **Cerrar sesión** en la `MaterialToolbar` y confirma el `MaterialAlertDialog`, la app invoca `SessionManager.cerrarSesion()` y vuelve a `LoginActivity` limpiando la pila de actividades. |
-| **Flujos alternativos** | **FA1 — Campos vacíos o inválidos:** La app muestra el mensaje de validación directamente en `TextInputLayout.setError(...)` sin enviar petición de red.<br>**FA2 — Credenciales incorrectas o correo duplicado:** La API responde con `success: false` y mensaje descriptivo; la app lo presenta en un `Snackbar`. |
+| **Flujo principal** | 1. Al abrir la app, `LoginActivity` verifica `SessionManager.estaLogueado()`. Si no hay token guardado, presenta el formulario Material 3 (`tilCorreo`, `tilContrasena`, `btnLogin`).<br>2. El usuario ingresa su correo y contraseña (o accede a `RegistroActivity` para crear una cuenta nueva mediante `POST auth/registro.php`).<br>3. La app valida que los campos no estén vacíos y envía `POST auth/login.php` con Volley.<br>4. La API verifica las credenciales con `password_verify()`, genera y guarda `usuarios.token` y devuelve `{"success": true, "token": "...", "nombre": "...", "rol": "...", "usuario_id": N}`.<br>5. La app guarda la sesión en `SharedPreferences` mediante `SessionManager.guardarSesion(...)` y navega a la pantalla principal.<br>6. Cuando el usuario selecciona **Cerrar sesión** en la `MaterialToolbar` y confirma el `MaterialAlertDialog`, la app invoca `SessionManager.cerrarSesion()` y vuelve a `LoginActivity` limpiando la pila de actividades. |
+| **Flujos alternativos** | **FA1 — Campos vacíos o inválidos:** La app muestra el mensaje de validación directamente en `TextInputLayout.setError(...)` sin enviar petición de red.<br>**FA2 — Credenciales incorrectas (login) o correo duplicado (registro):** La API responde con `success: false` y mensaje descriptivo; la app lo presenta en un `Snackbar`. |
 | **Postcondiciones** | Sesión autenticada con `X-Token` persistido en `SharedPreferences`, o sesión eliminada de forma segura al cerrar sesión. |
 
 ---
@@ -255,21 +256,35 @@ A continuación se documentan las fichas técnicas de los casos de uso del siste
 
 ---
 
-### CU10 — Atender alertas y enviar comandos remotos y CU11 — Ejecutar comando en ESP32
+### CU10 — Atender alertas
 
 | Campo | Descripción |
 | --- | --- |
-| **ID y nombre** | **CU10 / CU11** — Atender alertas y ejecutar comandos remotos (`abrir_acceso`, `alarma`) en el ESP32 |
-| **Actores** | Primario: **Administrador** / Secundario técnico: **Nodo IoT ESP32** |
-| **Requerimientos** | `RF06`, `RF07`, `RNF01`, `RNF03` |
-| **Precondiciones** | Usuario autenticado y nodo ESP32 activo en la red local. |
-| **Flujo principal** | 1. En **Alertas** (`AlertasActivity`), el administrador revisa las alertas pendientes (`atendida = 0`) por exceso de temperatura, humedad o intento de ingreso con aforo lleno, y pulsa **Atender** (`POST/PUT app/alertas.php`) para marcarlas con `atendida = 1`.<br>2. En **Dashboard**, cuando requiere abrir el paso o activar una alerta sonora en el sitio, el administrador pulsa **Abrir acceso** o **Activar alarma** y confirma la operación en el `MaterialAlertDialog`.<br>3. La app envía `POST app/comando.php` con `dispositivo_id` y `accion` (`abrir_acceso` o `alarma`); la API inserta la fila en `comandos` con `estado = 'pendiente'`.<br>4. En su siguiente ciclo de polling (máximo 3 s), el ESP32 ejecuta **CU11** invocando `GET esp32/comando.php?api_key=...`.<br>5. La API entrega el comando pendiente más antiguo y lo marca como `estado = 'ejecutado'` y `fecha_ejecucion = NOW()`.<br>6. El ESP32 acciona los indicadores físicos sin bloquear su bucle: `LED_VERDE` encendido `3000 ms` + 1 pitido corto para `abrir_acceso`, o parpadeo de `LED_ROJO` + 5 pitidos durante `2000 ms` para `alarma`. |
-| **Flujos alternativos** | **FA1 — Cancelación en diálogo:** Si el administrador cancela el `MaterialAlertDialog`, no se encola ningún comando.<br>**FA2 — Sin comandos pendientes:** `esp32/comando.php` devuelve `comando: null` y el ESP32 continúa su ciclo normal. |
-| **Postcondiciones** | Alerta marcada como atendida en `alertas` y comando remoto registrado como `ejecutado` en `comandos` tras su activación física en el ESP32. |
+| **ID y nombre** | **CU10** — Consultar y marcar alertas como atendidas |
+| **Actor** | **Administrador** |
+| **Requerimientos** | `RF06`, `RNF02`, `RNF03` |
+| **Precondiciones** | Usuario autenticado y alertas registradas en la tabla `alertas`. |
+| **Flujo principal** | 1. En **Alertas** (`AlertasActivity`), el administrador revisa las alertas pendientes (`atendida = 0`) por exceso de temperatura, humedad o intento de ingreso con aforo lleno.<br>2. Pulsa **Atender** (`POST/PUT app/alertas.php`); la API marca la alerta con `atendida = 1`. |
+| **Flujos alternativos** | **FA1 — Sin alertas pendientes:** La lista muestra el estado vacío correspondiente. |
+| **Postcondiciones** | Alerta marcada como atendida en `alertas`. |
 
 ---
 
-## 3.6 Matriz de trazabilidad
+### CU12 — Enviar comando remoto y CU11 — Ejecutar comando en el ESP32
+
+| Campo | Descripción |
+| --- | --- |
+| **ID y nombre** | **CU12 / CU11** — Enviar y ejecutar comandos remotos (`abrir_acceso`, `alarma`) en el ESP32 |
+| **Actores** | Primario: **Administrador** / Secundario técnico: **Nodo IoT ESP32** |
+| **Requerimientos** | `RF07`, `RNF01`, `RNF03` |
+| **Precondiciones** | Usuario autenticado y nodo ESP32 activo en la red local. |
+| **Flujo principal** | 1. En **Dashboard**, el administrador pulsa **Abrir acceso** o **Activar alarma** y confirma la operación en el `MaterialAlertDialog`.<br>2. La app envía `POST app/comando.php` con `dispositivo_id` y `accion` (`abrir_acceso` o `alarma`); la API inserta la fila en `comandos` con `estado = 'pendiente'`.<br>3. En su siguiente ciclo de polling (máximo 3 s), el ESP32 ejecuta **CU11** invocando `GET esp32/comando.php?api_key=...`.<br>4. La API entrega el comando pendiente más antiguo y lo marca como `estado = 'ejecutado'` y `fecha_ejecucion = NOW()`.<br>5. El ESP32 acciona los indicadores físicos sin bloquear su bucle: `LED_VERDE` encendido `3000 ms` + 1 pitido corto para `abrir_acceso`, o parpadeo de `LED_ROJO` + 5 pitidos durante `2000 ms` para `alarma`. |
+| **Flujos alternativos** | **FA1 — Cancelación en diálogo:** Si el administrador cancela el `MaterialAlertDialog`, no se encola ningún comando.<br>**FA2 — Sin comandos pendientes:** `esp32/comando.php` devuelve `comando: null` y el ESP32 continúa su ciclo normal. |
+| **Postcondiciones** | Comando remoto registrado como `ejecutado` en `comandos` tras su activación física en el ESP32. |
+
+---
+
+## 2.6 Matriz de trazabilidad
 
 La siguiente matriz vincula cada requerimiento funcional con los casos de uso, los endpoints de la API REST, las entidades de la base de datos y los componentes de firmware o pantallas de la aplicación móvil:
 
@@ -278,8 +293,8 @@ La siguiente matriz vincula cada requerimiento funcional con los casos de uso, l
 | **RF01** | `CU05` | `POST auth/registro.php`<br>`POST auth/login.php`<br>`GET/POST auth/validar_token.php` | `usuarios` | `LoginActivity`, `RegistroActivity`, `SessionManager`, `Config` |
 | **RF02** | `CU08`, `CU09` | `GET/POST/PUT app/personas.php`<br>`GET/POST/PUT app/dispositivos.php` | `personas`, `tarjetas_pendientes`, `dispositivos`, `limites` | `PersonasActivity`, `DispositivosActivity` |
 | **RF03** | `CU01`, `CU03` | `POST esp32/acceso.php`<br>`POST esp32/medicion.php` | `mediciones`, `dispositivos` | `firmware/esp32_aforo` (RC522, DHT22, LEDs, buzzer, `millis()`) |
-| **RF04** | `CU01`, `CU02`, `CU04` | `POST esp32/acceso.php` | `registros_acceso`, `personas`, `tarjetas_pendientes`, `limites`, `personas_dentro`, `alertas` | `firmware/esp32_aforo` (`enviarAcceso`, `actualizarIndicador`) |
+| **RF04** | `CU01`, `CU02` | `POST esp32/acceso.php` | `registros_acceso`, `personas`, `tarjetas_pendientes`, `limites`, `personas_dentro`, `alertas` | `firmware/esp32_aforo` (`enviarAcceso`, `actualizarIndicador`) |
 | **RF05** | `CU06` | `GET app/estado.php`<br>`GET app/dentro.php` | `personas_dentro`, `mediciones`, `limites`, `dispositivos` | `DashboardActivity` (polling 5 s, `chipEstado`, `progresoAforo`, `rvDentro`) |
-| **RF06** | `CU04`, `CU09`, `CU10` | `GET/POST/PUT app/limites.php`<br>`GET/POST/PUT app/alertas.php` | `limites`, `alertas` | `LimitesActivity`, `AlertasActivity`, notificaciones locales Android |
-| **RF07** | `CU10`, `CU11` | `POST app/comando.php`<br>`GET esp32/comando.php` | `comandos`, `dispositivos` | `DashboardActivity` (`btnAbrirAcceso`, `btnActivarAlarma`), `firmware/esp32_aforo` (polling 3 s) |
+| **RF06** | `CU02`, `CU04`, `CU09`, `CU10` | `GET/POST/PUT app/limites.php`<br>`GET/POST/PUT app/alertas.php` | `limites`, `alertas` | `LimitesActivity`, `AlertasActivity`, notificaciones locales Android |
+| **RF07** | `CU12`, `CU11` | `POST app/comando.php`<br>`GET esp32/comando.php` | `comandos`, `dispositivos` | `DashboardActivity` (`btnAbrirAcceso`, `btnActivarAlarma`), `firmware/esp32_aforo` (polling 3 s) |
 | **RF08** | `CU07` | `GET app/historial_accesos.php`<br>`GET app/historial_mediciones.php`<br>`GET app/exportar.php` | `registros_acceso`, `mediciones`, `personas` | `HistorialActivity`, `GraficasActivity` (`MPAndroidChart`) |
