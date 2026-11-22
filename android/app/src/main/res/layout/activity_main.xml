@@ -4,32 +4,30 @@
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   android:background="?attr/colorSurface"
-  android:gravity="center"
-  android:orientation="vertical"
-  android:padding="24dp">
+  android:fitsSystemWindows="true"
+  android:orientation="vertical">
 
-  <ImageView
-    android:layout_width="96dp"
-    android:layout_height="96dp"
-    android:contentDescription="@string/logo_descripcion"
-    android:src="@drawable/ic_launcher_foreground"
-    app:tint="?attr/colorPrimary" />
+  <com.google.android.material.appbar.MaterialToolbar
+    android:id="@+id/toolbar"
+    android:layout_width="match_parent"
+    android:layout_height="?attr/actionBarSize"
+    android:background="?attr/colorSurface"
+    app:menu="@menu/menu_principal"
+    app:title="@string/app_name"
+    app:titleTextColor="?attr/colorOnSurface" />
 
-  <TextView
-    android:layout_width="wrap_content"
+  <androidx.fragment.app.FragmentContainerView
+    android:id="@+id/contenedorPantalla"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1" />
+
+  <com.google.android.material.bottomnavigation.BottomNavigationView
+    android:id="@+id/bottomNav"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="16dp"
-    android:text="@string/app_name"
-    android:textAppearance="?attr/textAppearanceHeadlineMedium"
-    android:textColor="?attr/colorOnSurface" />
-
-  <TextView
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="8dp"
-    android:gravity="center"
-    android:text="@string/proyecto_listo"
-    android:textAppearance="?attr/textAppearanceBodyMedium"
-    android:textColor="?attr/colorOnSurfaceVariant" />
+    android:background="?attr/colorSurfaceContainer"
+    app:labelVisibilityMode="labeled"
+    app:menu="@menu/menu_navegacion" />
 
 </LinearLayout>
