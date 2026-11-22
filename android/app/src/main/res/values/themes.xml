@@ -23,7 +23,6 @@
     <item name="colorOnSurfaceVariant">@color/onSurfaceVariant</item>
     <item name="colorOutline">@color/outline</item>
     <item name="android:windowLightStatusBar">true</item>
-    <item name="android:windowLightNavigationBar">true</item>
   </style>
 
   <style name="Theme.AforoIoT" parent="Base.Theme.AforoIoT" />

@@ -3,4 +3,22 @@
   <string name="app_name">Aforo IoT</string>
   <string name="logo_descripcion">Logotipo de Aforo IoT</string>
   <string name="proyecto_listo">Proyecto Android listo · Material 3</string>
+
+  <string name="login_subtitulo">Control de acceso RFID y clima</string>
+  <string name="registro_subtitulo">Crea tu cuenta para administrar el aforo</string>
+  <string name="nombre">Nombre</string>
+  <string name="correo">Correo</string>
+  <string name="contrasena">Contraseña</string>
+  <string name="iniciar_sesion">Iniciar sesión</string>
+  <string name="crear_cuenta">Crear cuenta</string>
+  <string name="registrarse">Registrarse</string>
+  <string name="ya_tengo_cuenta">Ya tengo cuenta</string>
+  <string name="contrasena_ayuda">Mínimo 6 caracteres</string>
+
+  <string name="campo_requerido">Este campo es obligatorio</string>
+  <string name="correo_invalido">Ingresa un correo válido</string>
+  <string name="contrasena_corta">La contraseña debe tener al menos 6 caracteres</string>
+  <string name="cuenta_creada">Cuenta creada. Ya puedes iniciar sesión.</string>
+  <string name="error_conexion">No se pudo conectar con el servidor</string>
+  <string name="error_servidor">Ocurrió un error, intenta de nuevo</string>
 </resources>
