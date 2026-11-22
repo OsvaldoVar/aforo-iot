@@ -32,6 +32,11 @@
   <rect x="300" y="116" width="80" height="24" rx="8" fill="#D7F5DF"/>
   <text x="340" y="133" text-anchor="middle" font-size="11" font-weight="500" fill="#0B4F24">En línea</text>
   <text x="84" y="160" font-size="12" fill="#42474E">Aforo máximo 10 · API key ••••3f2a</text>
+  <circle cx="368" cy="160" r="18" fill="#D5E4F7"/>
+  <g fill="none" stroke="#0E1D2A" stroke-width="1.5" stroke-linejoin="round">
+    <rect x="362" y="154" width="9" height="11" rx="1.5"/>
+    <path d="M366 151h8a2 2 0 0 1 2 2v9"/>
+  </g>
   <text x="84" y="180" font-size="12" fill="#42474E">Última conexión 10:15:32</text>
   <rect x="32" y="198" width="80" height="24" rx="8" fill="#D5E4F7"/>
   <text x="72" y="215" text-anchor="middle" font-size="11" font-weight="500" fill="#0E1D2A">Habilitado</text>
@@ -46,6 +51,11 @@
   <rect x="288" y="260" width="92" height="24" rx="8" fill="#FFDAD6"/>
   <text x="334" y="277" text-anchor="middle" font-size="11" font-weight="500" fill="#410002">Sin conexión</text>
   <text x="84" y="304" font-size="12" fill="#42474E">Aforo máximo 5 · API key ••••8b1c</text>
+  <circle cx="368" cy="304" r="18" fill="#D5E4F7"/>
+  <g fill="none" stroke="#0E1D2A" stroke-width="1.5" stroke-linejoin="round">
+    <rect x="362" y="298" width="9" height="11" rx="1.5"/>
+    <path d="M366 295h8a2 2 0 0 1 2 2v9"/>
+  </g>
   <text x="84" y="324" font-size="12" fill="#42474E">Última conexión 20 nov, 18:40</text>
   <rect x="32" y="342" width="80" height="24" rx="8" fill="#D5E4F7"/>
   <text x="72" y="359" text-anchor="middle" font-size="11" font-weight="500" fill="#0E1D2A">Habilitado</text>
