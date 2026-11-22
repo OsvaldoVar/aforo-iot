@@ -1,4 +1,4 @@
-# 2. Arquitectura del sistema y diagrama de despliegue
+# 3. Arquitectura del sistema y diagrama de despliegue
 
 **Proyecto:** Aforo IoT — Sistema de control de acceso con RFID y monitoreo ambiental  
 **Fecha:** Noviembre de 2026  
@@ -6,7 +6,7 @@
 
 ---
 
-## 2.1 Descripción por capas
+## 3.1 Descripción por capas
 
 El sistema **Aforo IoT** adopta una arquitectura cliente–servidor en cuatro capas desacopladas. El nodo IoT y la aplicación móvil no se comunican directamente entre sí; ambos interactúan exclusivamente con una API REST centralizada que encapsula la lógica de negocio y el acceso a los datos.
 
@@ -27,7 +27,7 @@ El sistema **Aforo IoT** adopta una arquitectura cliente–servidor en cuatro ca
 
 ---
 
-## 2.2 Diagrama de componentes
+## 3.2 Diagrama de componentes
 
 ```mermaid
 flowchart LR
@@ -66,7 +66,7 @@ flowchart LR
 
 ---
 
-## 2.3 Diagrama de despliegue
+## 3.3 Diagrama de despliegue
 
 Los tres nodos del sistema operan dentro de la misma red local WiFi (2.4 GHz, subred `192.168.x.x`). La laptop servidor con Linux ejecuta el servidor PHP 8 integrado (`php -S 0.0.0.0:8080 -t backend`) en el puerto TCP `8080` (expuesto a la LAN) y MariaDB (compatible con MySQL) en el puerto TCP `3306` (acceso local desde PHP en `localhost`). Para pruebas en emulador Android Studio en el mismo equipo, la app utiliza el alias `10.0.2.2:8080`.
 
@@ -89,7 +89,7 @@ flowchart TB
 
 ---
 
-## 2.4 Flujo de un dato
+## 3.4 Flujo de un dato
 
 El recorrido completo desde la lectura de una tarjeta RFID hasta su visualización en la aplicación móvil ocurre en los siguientes pasos:
 
@@ -108,7 +108,7 @@ De forma paralela, el ESP32 envía lecturas del DHT22 cada 15 s a `esp32/medicio
 
 ---
 
-## 2.5 Tecnologías y versiones
+## 3.5 Tecnologías y versiones
 
 | Capa | Tecnología / Herramienta | Versión / Detalle | Función en el sistema |
 | --- | --- | --- | --- |
@@ -127,7 +127,7 @@ De forma paralela, el ESP32 envía lecturas del DHT22 cada 15 s a `esp32/medicio
 
 ---
 
-## 2.6 Decisiones de diseño
+## 3.6 Decisiones de diseño
 
 ### Servidor PHP integrado (`php -S`) en red local
 
