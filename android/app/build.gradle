@@ -2,6 +2,13 @@ plugins {
     id 'com.android.application'
 }
 
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(new FileInputStream(localPropertiesFile))
+}
+def aforoBaseUrl = localProperties.getProperty("aforo.baseUrl", "")
+
 android {
     namespace 'com.example.aforoiot'
     compileSdk 35
@@ -12,6 +19,9 @@ android {
         targetSdk 35
         versionCode 1
         versionName "0.1"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField "String", "URL_BASE_LOCAL", "\"${aforoBaseUrl}\""
     }
 
     buildTypes {
@@ -25,6 +35,10 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+
+    buildFeatures {
+        buildConfig true
+    }
 }
 
 dependencies {
@@ -32,4 +46,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
     implementation 'com.android.volley:volley:1.2.1'
+
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
 }
