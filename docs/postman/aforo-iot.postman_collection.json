@@ -669,6 +669,271 @@
           }
         }
       ]
+    },
+    {
+      "name": "App",
+      "item": [
+        {
+          "name": "Login (obtener token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Login exitoso y guarda token para endpoints de App', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.token).to.be.a('string').and.not.be.empty;",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"admin@aforoiot.local\",\n  \"password\": \"admin123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Estado OK",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Estado del dispositivo con campos planos esperados', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.dispositivo_id).to.eql(1);",
+                  "    pm.expect(json.nombre_dispositivo).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.dentro).to.be.a('number').and.be.at.least(0);",
+                  "    pm.expect(json.aforo_max).to.satisfy(function (v) { return v === null || typeof v === 'number'; });",
+                  "    pm.expect(json.en_linea).to.be.a('boolean');",
+                  "    pm.expect(json.ultima_conexion).to.satisfy(function (v) { return v === null || typeof v === 'string'; });",
+                  "    pm.expect(json.medicion).to.be.an('object');",
+                  "    pm.expect(json.medicion.temperatura).to.be.a('number');",
+                  "    pm.expect(json.medicion.humedad).to.be.a('number');",
+                  "    pm.expect(json.medicion.fecha).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/estado.php?dispositivo_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "estado.php"
+              ],
+              "query": [
+                {
+                  "key": "dispositivo_id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Estado sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Rechaza petición sin X-Token', function () {",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/app/estado.php?dispositivo_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "estado.php"
+              ],
+              "query": [
+                {
+                  "key": "dispositivo_id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Estado con token inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Rechaza petición con X-Token inválido', function () {",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "token-invalido-0000",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/estado.php?dispositivo_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "estado.php"
+              ],
+              "query": [
+                {
+                  "key": "dispositivo_id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Dentro OK",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Lista de personas dentro con total y campos esperados', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.personas).to.be.an('array');",
+                  "    pm.expect(json.total).to.eql(json.personas.length);",
+                  "    if (json.personas.length > 0) {",
+                  "        pm.expect(json.personas[0].id).to.be.a('number').and.be.above(0);",
+                  "        pm.expect(json.personas[0].nombre).to.be.a('string').and.not.be.empty;",
+                  "        pm.expect(json.personas[0].hora_entrada).to.be.a('string').and.not.be.empty;",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/dentro.php?dispositivo_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "dentro.php"
+              ],
+              "query": [
+                {
+                  "key": "dispositivo_id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
     }
   ]
 }
