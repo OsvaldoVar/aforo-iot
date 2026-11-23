@@ -14,16 +14,21 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.VolleyError;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.snackbar.Snackbar;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class DashboardFragment extends Fragment {
@@ -41,8 +46,12 @@ public class DashboardFragment extends Fragment {
     private TextView txtHumedad;
     private TextView txtActualizado;
     private LinearProgressIndicator progresoAforo;
+    private RecyclerView rvDentro;
+    private TextView txtSinPersonas;
+    private PersonasDentroAdapter adaptador;
 
     private boolean cargando;
+    private boolean cargandoDentro;
 
     @Nullable
     @Override
@@ -64,6 +73,12 @@ public class DashboardFragment extends Fragment {
         txtHumedad = vista.findViewById(R.id.txtHumedad);
         txtActualizado = vista.findViewById(R.id.txtActualizado);
         progresoAforo = vista.findViewById(R.id.progresoAforo);
+        rvDentro = vista.findViewById(R.id.rvDentro);
+        txtSinPersonas = vista.findViewById(R.id.txtSinPersonas);
+
+        adaptador = new PersonasDentroAdapter();
+        rvDentro.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rvDentro.setAdapter(adaptador);
     }
 
     @Override
@@ -86,6 +101,7 @@ public class DashboardFragment extends Fragment {
             @Override
             public void run() {
                 cargarEstado();
+                cargarDentro();
                 manejador.postDelayed(this, INTERVALO_REFRESCO_MS);
             }
         };
@@ -173,20 +189,76 @@ public class DashboardFragment extends Fragment {
         return ContextCompat.getColor(requireContext(), recurso);
     }
 
+    private void cargarDentro() {
+        if (!isAdded() || cargandoDentro) {
+            return;
+        }
+        cargandoDentro = true;
+        Api.get(requireContext(), "app/dentro.php", this::actualizarDentro, this::manejarErrorDentro);
+    }
+
+    private void actualizarDentro(JSONObject respuesta) {
+        cargandoDentro = false;
+        if (!isAdded()) {
+            return;
+        }
+        if (!respuesta.optBoolean("success", false)) {
+            mostrarMensaje(respuesta.optString("mensaje", getString(R.string.error_servidor)));
+            return;
+        }
+
+        List<PersonaDentro> personas = new ArrayList<>();
+        JSONArray arreglo = respuesta.optJSONArray("personas");
+        if (arreglo != null) {
+            for (int i = 0; i < arreglo.length(); i++) {
+                JSONObject item = arreglo.optJSONObject(i);
+                if (item != null) {
+                    personas.add(new PersonaDentro(
+                            item.optString("nombre"),
+                            item.optString("hora_entrada")));
+                }
+            }
+        }
+
+        adaptador.actualizar(personas);
+        boolean vacio = personas.isEmpty();
+        txtSinPersonas.setVisibility(vacio ? View.VISIBLE : View.GONE);
+        rvDentro.setVisibility(vacio ? View.GONE : View.VISIBLE);
+    }
+
     private void manejarError(VolleyError error) {
         cargando = false;
         if (!isAdded()) {
             return;
         }
         if (Api.esNoAutorizado(error)) {
-            sesion.cerrarSesion();
-            Intent intent = new Intent(requireContext(), LoginActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            requireActivity().finish();
+            manejarNoAutorizado();
             return;
         }
         mostrarMensaje(Api.mensajeDeError(requireContext(), error));
+    }
+
+    private void manejarErrorDentro(VolleyError error) {
+        cargandoDentro = false;
+        if (!isAdded()) {
+            return;
+        }
+        if (Api.esNoAutorizado(error)) {
+            manejarNoAutorizado();
+            return;
+        }
+        mostrarMensaje(Api.mensajeDeError(requireContext(), error));
+    }
+
+    private void manejarNoAutorizado() {
+        if (!sesion.estaLogueado()) {
+            return;
+        }
+        sesion.cerrarSesion();
+        Intent intent = new Intent(requireContext(), LoginActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        requireActivity().finish();
     }
 
     private void mostrarMensaje(String mensaje) {
