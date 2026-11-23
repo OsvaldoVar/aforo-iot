@@ -1115,6 +1115,631 @@
           }
         }
       ]
+    },
+    {
+      "name": "Gestion",
+      "item": [
+        {
+          "name": "Listar dispositivos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Lista de dispositivos con campos esperados', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.dispositivos).to.be.an('array');",
+                  "    if (json.dispositivos.length > 0) {",
+                  "        const d = json.dispositivos[0];",
+                  "        pm.expect(d.id).to.be.a('number').and.be.above(0);",
+                  "        pm.expect(d.nombre).to.be.a('string').and.not.be.empty;",
+                  "        pm.expect(d.api_key).to.be.a('string').and.not.be.empty;",
+                  "        pm.expect(d.activo).to.be.a('boolean');",
+                  "        pm.expect(d.en_linea).to.be.a('boolean');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/dispositivos.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "dispositivos.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear dispositivo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Dispositivo creado con api_key generada', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.dispositivo).to.be.an('object');",
+                  "    pm.expect(json.dispositivo.id).to.be.a('number').and.be.above(0);",
+                  "    pm.expect(json.dispositivo.api_key).to.be.a('string').and.have.lengthOf(32);",
+                  "    pm.expect(json.dispositivo.activo).to.eql(true);",
+                  "    pm.collectionVariables.set('dispositivo_creado_id', String(json.dispositivo.id));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"crear\",\n  \"nombre\": \"ESP32 Laboratorio\",\n  \"ubicacion\": \"Edificio B\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/app/dispositivos.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "dispositivos.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Editar dispositivo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Dispositivo actualizado correctamente', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.dispositivo).to.be.an('object');",
+                  "    pm.expect(json.dispositivo.nombre).to.eql('ESP32 Laboratorio Norte');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"editar\",\n  \"id\": {{dispositivo_creado_id}},\n  \"nombre\": \"ESP32 Laboratorio Norte\",\n  \"ubicacion\": \"Planta Alta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/app/dispositivos.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "dispositivos.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Desactivar dispositivo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Dispositivo marcado como inactivo', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.dispositivo.activo).to.eql(false);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"desactivar\",\n  \"id\": {{dispositivo_creado_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/app/dispositivos.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "dispositivos.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Activar dispositivo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Dispositivo reactivado correctamente', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.dispositivo.activo).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"activar\",\n  \"id\": {{dispositivo_creado_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/app/dispositivos.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "dispositivos.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar personas y pendientes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Devuelve listas de personas y tarjetas pendientes', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.personas).to.be.an('array');",
+                  "    pm.expect(json.pendientes).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/personas.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "personas.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear persona",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Persona creada correctamente', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.persona).to.be.an('object');",
+                  "    pm.expect(json.persona.id).to.be.a('number').and.be.above(0);",
+                  "    pm.expect(json.persona.activo).to.eql(true);",
+                  "    pm.collectionVariables.set('persona_creada_id', String(json.persona.id));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"crear\",\n  \"nombre\": \"Persona Demo\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/app/personas.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "personas.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Editar persona",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Nombre de persona actualizado', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.persona.nombre).to.eql('Persona Demo Editada');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"editar\",\n  \"id\": {{persona_creada_id}},\n  \"nombre\": \"Persona Demo Editada\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/app/personas.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "personas.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Asignar tarjeta pendiente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Tarjeta asignada en mayúsculas', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.persona).to.be.an('object');",
+                  "    pm.expect(json.persona.uid_rfid).to.eql('ABCD1234');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"asignar\",\n  \"persona_id\": {{persona_creada_id}},\n  \"uid_rfid\": \"ABCD1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/app/personas.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "personas.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Desactivar persona",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Persona marcada como inactiva', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.persona.activo).to.eql(false);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"desactivar\",\n  \"id\": {{persona_creada_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/app/personas.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "personas.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Activar persona",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Persona reactivada correctamente', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.persona.activo).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"activar\",\n  \"id\": {{persona_creada_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/app/personas.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "personas.php"
+              ]
+            }
+          }
+        }
+      ]
     }
   ]
 }
