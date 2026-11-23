@@ -83,6 +83,9 @@ public class RegistroActivity extends AppCompatActivity {
         btnRegistrar.setEnabled(false);
         Api.post(this, "auth/registro.php", cuerpo,
                 respuesta -> {
+                    if (isFinishing() || isDestroyed()) {
+                        return;
+                    }
                     btnRegistrar.setEnabled(true);
                     if (!respuesta.optBoolean("success", false)) {
                         mostrarMensaje(respuesta.optString("mensaje", getString(R.string.error_servidor)));
@@ -94,8 +97,11 @@ public class RegistroActivity extends AppCompatActivity {
                     finish();
                 },
                 error -> {
+                    if (isFinishing() || isDestroyed()) {
+                        return;
+                    }
                     btnRegistrar.setEnabled(true);
-                    mostrarMensaje(Api.mensajeDeError(this, error));
+                    ManejoErrores.manejar(this, btnRegistrar, error, this::registrar, false);
                 });
     }
 
