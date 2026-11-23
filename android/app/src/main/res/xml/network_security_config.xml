@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- La API es HTTP en la red local y la IP de la laptop cambia por DHCP.
+     En producción hay que servir la API por HTTPS y quitar esta excepción. -->
+<network-security-config>
+  <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

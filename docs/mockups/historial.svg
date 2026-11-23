@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="412" height="915" viewBox="0 0 412 915" font-family="Roboto, 'Segoe UI', Arial, sans-serif">
+  <rect width="412" height="915" fill="#F7F9FF"/>
+
+  <!-- barra de estado -->
+  <text x="16" y="17" font-size="12" fill="#42474E">9:41</text>
+  <g fill="#42474E">
+    <rect x="338" y="12" width="3" height="4" rx="1"/>
+    <rect x="343" y="10" width="3" height="6" rx="1"/>
+    <rect x="348" y="8" width="3" height="8" rx="1"/>
+    <rect x="353" y="6" width="3" height="10" rx="1"/>
+  </g>
+  <rect x="366" y="6" width="18" height="10" rx="3" fill="none" stroke="#42474E" stroke-width="1.5"/>
+  <rect x="368" y="8" width="12" height="6" rx="1.5" fill="#42474E"/>
+  <rect x="385" y="9" width="2" height="4" rx="1" fill="#42474E"/>
+
+  <!-- barra superior -->
+  <text x="16" y="62" font-size="20" font-weight="500" fill="#181C20">Historial</text>
+  <g fill="none" stroke="#42474E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M376 46v10m0 0l-4-4m4 4l4-4"/>
+    <path d="M366 64h20"/>
+  </g>
+
+  <!-- pestañas -->
+  <text x="103" y="120" text-anchor="middle" font-size="14" font-weight="500" fill="#00639B">Accesos</text>
+  <text x="309" y="120" text-anchor="middle" font-size="14" fill="#42474E">Mediciones</text>
+  <rect x="0" y="132" width="412" height="1" fill="#D5E4F7"/>
+  <rect x="46" y="130" width="114" height="3" rx="1.5" fill="#00639B"/>
+
+  <!-- filtro de rango -->
+  <rect x="16" y="152" width="160" height="32" rx="8" fill="none" stroke="#72777F" stroke-width="1"/>
+  <rect x="28" y="162" width="13" height="12" rx="2" fill="none" stroke="#42474E" stroke-width="1.5"/>
+  <path d="M28 166h13M32 160v3M37 160v3" stroke="#42474E" stroke-width="1.5" stroke-linecap="round"/>
+  <text x="50" y="172" font-size="12" fill="#42474E">21 – 22 nov</text>
+  <text x="396" y="172" text-anchor="end" font-size="12" fill="#42474E">5 registros</text>
+
+  <!-- registros -->
+  <rect x="16" y="204" width="380" height="72" rx="12" fill="#ECEEF4"/>
+  <circle cx="52" cy="240" r="18" fill="#CEE5FF"/>
+  <path d="M56 232l-8 8h8M48 240h8" fill="none" stroke="#001D33" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="84" y="238" font-size="14" font-weight="500" fill="#181C20">Ana López</text>
+  <text x="84" y="258" font-size="12" fill="#42474E">Entrada · 21 nov, 10:15</text>
+  <rect x="300" y="228" width="80" height="24" rx="8" fill="#CEE5FF"/>
+  <text x="340" y="245" text-anchor="middle" font-size="11" font-weight="500" fill="#001D33">Entrada</text>
+
+  <rect x="16" y="288" width="380" height="72" rx="12" fill="#ECEEF4"/>
+  <circle cx="52" cy="324" r="18" fill="#D5E4F7"/>
+  <path d="M48 332l8-8h-8M56 324h-8" fill="none" stroke="#233240" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="84" y="322" font-size="14" font-weight="500" fill="#181C20">Ana López</text>
+  <text x="84" y="342" font-size="12" fill="#42474E">Salida · 21 nov, 09:48</text>
+  <rect x="300" y="312" width="80" height="24" rx="8" fill="#D5E4F7"/>
+  <text x="340" y="329" text-anchor="middle" font-size="11" font-weight="500" fill="#0E1D2A">Salida</text>
+
+  <rect x="16" y="372" width="380" height="72" rx="12" fill="#ECEEF4"/>
+  <circle cx="52" cy="408" r="18" fill="#CEE5FF"/>
+  <path d="M56 400l-8 8h8M48 408h8" fill="none" stroke="#001D33" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="84" y="406" font-size="14" font-weight="500" fill="#181C20">Luis Pérez</text>
+  <text x="84" y="426" font-size="12" fill="#42474E">Entrada · 21 nov, 09:40</text>
+  <rect x="300" y="396" width="80" height="24" rx="8" fill="#CEE5FF"/>
+  <text x="340" y="413" text-anchor="middle" font-size="11" font-weight="500" fill="#001D33">Entrada</text>
+
+  <rect x="16" y="456" width="380" height="72" rx="12" fill="#ECEEF4"/>
+  <circle cx="52" cy="492" r="18" fill="#CEE5FF"/>
+  <path d="M56 484l-8 8h8M48 492h8" fill="none" stroke="#001D33" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="84" y="490" font-size="14" font-weight="500" fill="#181C20">María Ruiz</text>
+  <text x="84" y="510" font-size="12" fill="#42474E">Entrada · 21 nov, 09:12</text>
+  <rect x="300" y="480" width="80" height="24" rx="8" fill="#CEE5FF"/>
+  <text x="340" y="497" text-anchor="middle" font-size="11" font-weight="500" fill="#001D33">Entrada</text>
+
+  <rect x="16" y="540" width="380" height="72" rx="12" fill="#ECEEF4"/>
+  <circle cx="52" cy="576" r="18" fill="#D5E4F7"/>
+  <path d="M48 584l8-8h-8M56 576h-8" fill="none" stroke="#233240" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="84" y="574" font-size="14" font-weight="500" fill="#181C20">Luis Pérez</text>
+  <text x="84" y="594" font-size="12" fill="#42474E">Salida · 20 nov, 18:55</text>
+  <rect x="300" y="564" width="80" height="24" rx="8" fill="#D5E4F7"/>
+  <text x="340" y="581" text-anchor="middle" font-size="11" font-weight="500" fill="#0E1D2A">Salida</text>
+
+  <!-- navegación inferior -->
+  <path d="M0 835h412v80H0z" fill="#ECEEF4"/>
+  <rect x="0" y="835" width="412" height="1" fill="#D5E4F7"/>
+
+  <g fill="none" stroke="#42474E" stroke-width="1.7">
+    <rect x="42" y="858" width="8" height="8" rx="2"/>
+    <rect x="53" y="858" width="8" height="8" rx="2"/>
+    <rect x="42" y="869" width="8" height="8" rx="2"/>
+    <rect x="53" y="869" width="8" height="8" rx="2"/>
+  </g>
+  <text x="51.5" y="899" text-anchor="middle" font-size="11" fill="#42474E">Dashboard</text>
+
+  <rect x="122.5" y="852" width="64" height="32" rx="16" fill="#CEE5FF"/>
+  <g fill="none" stroke="#00639B" stroke-width="1.7">
+    <circle cx="154.5" cy="868" r="9"/>
+    <path d="M154.5 863v5l3 2" stroke-linecap="round"/>
+  </g>
+  <text x="154.5" y="899" text-anchor="middle" font-size="11" font-weight="500" fill="#00639B">Historial</text>
+
+  <g fill="none" stroke="#42474E" stroke-width="1.7">
+    <circle cx="257.5" cy="864" r="4.5"/>
+    <path d="M248 877c0-5 4-8 9.5-8s9.5 3 9.5 8" stroke-linecap="round"/>
+  </g>
+  <text x="257.5" y="899" text-anchor="middle" font-size="11" fill="#42474E">Personas</text>
+
+  <g fill="#42474E">
+    <circle cx="352" cy="868" r="1.6"/>
+    <circle cx="360.5" cy="868" r="1.6"/>
+    <circle cx="369" cy="868" r="1.6"/>
+  </g>
+  <text x="360.5" y="899" text-anchor="middle" font-size="11" fill="#42474E">Más</text>
+</svg>

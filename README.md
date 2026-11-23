@@ -14,19 +14,44 @@ Sistema IoT de control de acceso con RFID y monitoreo de temperatura y humedad. 
 
 ## Requisitos
 
-- XAMPP con PHP 8 y MySQL
+- Linux con PHP 8 (extensión `pdo_mysql`) y MariaDB (o MySQL 8)
 - Android Studio
 - Arduino IDE con soporte para ESP32 y las librerías MFRC522, DHT sensor library y ArduinoJson 7
 - Postman
 
 ## Instalación
 
-Se completará al final del proyecto.
+### Base de datos y backend
 
-- Base de datos
-- Backend
-- Firmware
-- App
+En Arch Linux / CachyOS (asegurando que el firewall permita tráfico entrante en el puerto TCP 8080 dentro de la red WiFi de 2.4 GHz):
+
+```bash
+sudo pacman -S --needed php mariadb
+sudo mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
+sudo systemctl enable --now mariadb
+sudo sed -i 's/^;extension=pdo_mysql/extension=pdo_mysql/' /etc/php/php.ini
+sudo mariadb < database/schema.sql
+sudo mariadb < database/seed.sql
+sudo mariadb -e "CREATE USER IF NOT EXISTS 'aforo'@'localhost' IDENTIFIED BY 'cambia-esta-clave'; GRANT ALL PRIVILEGES ON aforo_iot.* TO 'aforo'@'localhost';"
+cp backend/api_aforo/config.example.php backend/api_aforo/config.php   # editar DB_USER y DB_PASS
+php -S 0.0.0.0:8080 -t backend
+```
+
+En otras distribuciones usar su gestor de paquetes (`apt install php php-mysql mariadb-server`); si un integrante usa Windows puede usar XAMPP, solo cambia la URL base.
+
+URLs base de la API:
+
+- Local: `http://localhost:8080/api_aforo/`
+- Emulador Android: `http://10.0.2.2:8080/api_aforo/`
+- Celular y ESP32: `http://<IP-de-la-laptop>:8080/api_aforo/`
+
+### Firmware
+
+Se completará en el Sprint 2.
+
+### App
+
+Se completará en el Sprint 2.
 
 ## Flujo de trabajo
 
@@ -44,3 +69,9 @@ Se completará al final del proyecto.
 | OsvaldoVar | Administrador del repo, base de datos y API |
 | salazar5678-web | Firmware ESP32 y hardware |
 | OscarJDA | App Android |
+
+## Documentación
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) — Flujo de ramas, commits y PR
+- [docs/ESTANDARES.md](docs/ESTANDARES.md) — Reglas de código por área
+- [docs/ESTETICA.md](docs/ESTETICA.md) — Guía visual Material 3 y señalización de hardware
