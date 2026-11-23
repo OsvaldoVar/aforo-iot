@@ -29,8 +29,6 @@
   <string name="cerrar_sesion_confirmacion">¿Seguro que quieres cerrar la sesión?</string>
   <string name="cancelar">Cancelar</string>
 
-  <string name="vacio_dashboard">El aforo y el clima estarán disponibles en el Sprint 2.</string>
-  <string name="vacio_historial">Aquí verás los accesos y las mediciones.</string>
   <string name="vacio_personas">Aquí verás las personas dentro y las tarjetas pendientes.</string>
   <string name="vacio_mas">Dispositivos, alertas, límites y gráficas.</string>
 
@@ -54,4 +52,13 @@
   <string name="no_hay_personas">No hay personas dentro</string>
   <string name="desde_hora">Desde %1$s</string>
   <string name="reintentar">Reintentar</string>
+  <string name="tab_accesos">Accesos</string>
+  <string name="tab_mediciones">Mediciones</string>
+  <string name="todo_el_historial">Todo el historial</string>
+  <string name="seleccionar_rango">Selecciona el rango de fechas</string>
+  <string name="rango_fechas">%1$s – %2$s</string>
+  <string name="sin_registros">Sin registros en este rango</string>
+  <string name="entrada">Entrada</string>
+  <string name="salida">Salida</string>
+  <string name="medicion_formato">%1$.1f °C · %2$.1f %%</string>
 </resources>
