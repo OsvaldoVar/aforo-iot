@@ -66,23 +66,18 @@ public class MainActivity extends AppCompatActivity {
         if (itemId == R.id.navDashboard) {
             pantalla = new DashboardFragment();
             titulo = R.string.menu_dashboard;
+        } else if (itemId == R.id.navHistorial) {
+            pantalla = new HistorialFragment();
+            titulo = R.string.menu_historial;
+        } else if (itemId == R.id.navMas) {
+            pantalla = new MasFragment();
+            titulo = R.string.menu_mas;
         } else {
-            int icono;
-            int detalle;
-            if (itemId == R.id.navHistorial) {
-                icono = R.drawable.ic_historial;
-                titulo = R.string.menu_historial;
-                detalle = R.string.vacio_historial;
-            } else if (itemId == R.id.navPersonas) {
-                icono = R.drawable.ic_personas;
-                titulo = R.string.menu_personas;
-                detalle = R.string.vacio_personas;
-            } else {
-                icono = R.drawable.ic_mas;
-                titulo = R.string.menu_mas;
-                detalle = R.string.vacio_mas;
-            }
-            pantalla = PantallaVaciaFragment.newInstance(icono, titulo, detalle);
+            pantalla = PantallaVaciaFragment.newInstance(
+                    R.drawable.ic_personas,
+                    R.string.menu_personas,
+                    R.string.vacio_personas);
+            titulo = R.string.menu_personas;
         }
 
         getSupportFragmentManager()
