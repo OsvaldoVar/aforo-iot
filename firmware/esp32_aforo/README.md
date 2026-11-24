@@ -14,3 +14,15 @@ Para la prueba de integración, comprueba que aparezca una fila en `mediciones` 
 - HTTP 400 indica datos rechazados y HTTP 401 indica que debe revisarse `API_KEY`. Se registran en el monitor serie y no activan la pausa por fallos temporales.
 
 Para validar la recuperación, observa el monitor serie a 115200 baudios. Con el ESP32 encendido, apaga y enciende el router de prueba y comprueba que se reconecte sin reiniciar. Después, con WiFi disponible, detén y vuelve a iniciar la API. Verifica que los intentos se espacien durante la interrupción, que se reanuden las confirmaciones HTTP 200 y que la tabla `mediciones` reciba nuevas filas al recuperarse el servicio.
+
+## Lectura RFID
+
+Instala **MFRC522** además de las bibliotecas de medición. **SPI** viene con el soporte para ESP32. Con el equipo apagado, conecta el RC522 a 3.3 V y GND. Conecta SDA/SS a GPIO 5, RST a 22, SCK a 18, MISO a 19 y MOSI a 23. [Montaje en protoboard](../../docs/hardware/s1_b1_montaje_protoboard.md)
+
+El lector se consulta en cada vuelta del ciclo. Envía el UID completo en hexadecimal, en mayúsculas y sin separadores, por POST a `esp32/acceso.php` con `api_key` y `uid`. El monitor serie distingue entrada, salida, tarjeta desconocida, aforo lleno y errores de acceso sin mostrar la clave. Solo se confirma una entrada o salida con HTTP 200, `success: true` booleano y `tipo` válido. La función `procesarRespuestaAcceso(codigo, cuerpo)` es el punto para conectar la señalización posteriormente.
+
+Después de leer una tarjeta, el lector la deja en reposo hasta retirarla. El firmware descarta una nueva presentación del mismo UID durante 3 s, aunque se haya leído otra tarjeta entre medias. Conserva hasta 16 UID recientes y, si todos siguen en su intervalo, omite nuevas lecturas hasta que haya espacio. Una lectura sin WiFi o con respuesta incierta requiere retirar y volver a presentar la tarjeta. El POST de acceso no se reintenta automáticamente ni cambia la pausa de las mediciones.
+
+Las solicitudes HTTP son síncronas y conservan los tiempos de espera de 3 s para conexión y lectura. Mientras una solicitud está en curso, pueden retrasarse tanto las lecturas RFID como la siguiente medición.
+
+Para la prueba física, abre el monitor serie a 115200 baudios. Mantén una tarjeta registrada en el lector más de 3 s y confirma que aparece un solo registro. Retírala y vuelve a presentarla tras el intervalo para comprobar la alternancia entrada/salida. Prueba también dos tarjetas distintas seguidas, una desconocida y una lectura con la red desconectada. Confirma que las mediciones continúan al restablecer la red.
