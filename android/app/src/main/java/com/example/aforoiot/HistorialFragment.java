@@ -116,7 +116,14 @@ public class HistorialFragment extends Fragment {
                     }
                 },
                 error -> {
-                    if (!isAdded() || peticion != idPeticion) {
+                    if (!isAdded()) {
+                        return;
+                    }
+                    if (Api.esNoAutorizado(error)) {
+                        ManejoErrores.manejar(requireActivity(), getView(), error, null, true);
+                        return;
+                    }
+                    if (peticion != idPeticion) {
                         return;
                     }
                     manejarError(error);
