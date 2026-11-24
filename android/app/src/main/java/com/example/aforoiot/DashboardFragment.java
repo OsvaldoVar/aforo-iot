@@ -1,10 +1,10 @@
 package com.example.aforoiot;
 
-import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,10 +33,10 @@ import java.util.Locale;
 
 public class DashboardFragment extends Fragment {
     private static final long INTERVALO_REFRESCO_MS = 5000L;
+    private static final long INTERVALO_ERROR_MS = 15000L;
 
     private Handler manejador;
     private Runnable refresco;
-    private SessionManager sesion;
 
     private Chip chipEstado;
     private TextView txtDentro;
@@ -52,6 +52,7 @@ public class DashboardFragment extends Fragment {
 
     private boolean cargando;
     private boolean cargandoDentro;
+    private long ultimoErrorMs;
 
     @Nullable
     @Override
@@ -64,7 +65,6 @@ public class DashboardFragment extends Fragment {
     public void onViewCreated(@NonNull View vista, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(vista, savedInstanceState);
 
-        sesion = new SessionManager(requireContext());
         chipEstado = vista.findViewById(R.id.chipEstado);
         txtDentro = vista.findViewById(R.id.txtDentro);
         txtAforoMaximo = vista.findViewById(R.id.txtAforoMaximo);
@@ -131,6 +131,7 @@ public class DashboardFragment extends Fragment {
             mostrarMensaje(respuesta.optString("mensaje", getString(R.string.error_servidor)));
             return;
         }
+        ultimoErrorMs = 0;
 
         int dentro = respuesta.optInt("dentro", 0);
         int aforoMax = respuesta.isNull("aforo_max") ? 0 : respuesta.optInt("aforo_max", 0);
@@ -206,6 +207,7 @@ public class DashboardFragment extends Fragment {
             mostrarMensaje(respuesta.optString("mensaje", getString(R.string.error_servidor)));
             return;
         }
+        ultimoErrorMs = 0;
 
         List<PersonaDentro> personas = new ArrayList<>();
         JSONArray arreglo = respuesta.optJSONArray("personas");
@@ -231,11 +233,14 @@ public class DashboardFragment extends Fragment {
         if (!isAdded()) {
             return;
         }
-        if (Api.esNoAutorizado(error)) {
-            manejarNoAutorizado();
+        if (!debeMostrarError(error)) {
             return;
         }
-        mostrarMensaje(Api.mensajeDeError(requireContext(), error));
+        ManejoErrores.manejar(requireActivity(), getView(), error,
+                () -> {
+                    ultimoErrorMs = 0;
+                    cargarEstado();
+                }, true);
     }
 
     private void manejarErrorDentro(VolleyError error) {
@@ -243,22 +248,26 @@ public class DashboardFragment extends Fragment {
         if (!isAdded()) {
             return;
         }
-        if (Api.esNoAutorizado(error)) {
-            manejarNoAutorizado();
+        if (!debeMostrarError(error)) {
             return;
         }
-        mostrarMensaje(Api.mensajeDeError(requireContext(), error));
+        ManejoErrores.manejar(requireActivity(), getView(), error,
+                () -> {
+                    ultimoErrorMs = 0;
+                    cargarDentro();
+                }, true);
     }
 
-    private void manejarNoAutorizado() {
-        if (!sesion.estaLogueado()) {
-            return;
+    private boolean debeMostrarError(VolleyError error) {
+        if (Api.esNoAutorizado(error)) {
+            return true;
         }
-        sesion.cerrarSesion();
-        Intent intent = new Intent(requireContext(), LoginActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        requireActivity().finish();
+        long ahora = SystemClock.elapsedRealtime();
+        if (ahora - ultimoErrorMs < INTERVALO_ERROR_MS) {
+            return false;
+        }
+        ultimoErrorMs = ahora;
+        return true;
     }
 
     private void mostrarMensaje(String mensaje) {
