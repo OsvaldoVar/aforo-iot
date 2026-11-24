@@ -23,6 +23,14 @@ El lector se consulta en cada vuelta del ciclo. Envía el UID completo en hexade
 
 Después de leer una tarjeta, el lector la deja en reposo hasta retirarla. El firmware descarta una nueva presentación del mismo UID durante 3 s, aunque se haya leído otra tarjeta entre medias. Conserva hasta 16 UID recientes y, si todos siguen en su intervalo, omite nuevas lecturas hasta que haya espacio. Una lectura sin WiFi o con respuesta incierta requiere retirar y volver a presentar la tarjeta. El POST de acceso no se reintenta automáticamente ni cambia la pausa de las mediciones.
 
-Las solicitudes HTTP son síncronas y conservan los tiempos de espera de 3 s para conexión y lectura. Mientras una solicitud está en curso, pueden retrasarse tanto las lecturas RFID como la siguiente medición.
+## Sondeo RFID y tarea de E/S
+
+`loop()` consulta el RC522, aplica el antirrebote y programa una medición cada 15 s con `millis()`. Una tarea FreeRTOS separada lee el DHT22, gestiona la reconexión WiFi y ejecuta los POST. En el ESP32 de dos núcleos, la tarea corre en el núcleo distinto al de `loop()`.
+
+La cola FIFO admite **8 trabajos en espera**, además del que se está procesando. Los accesos se envían en el orden de captura y cada trabajo se procesa una sola vez. Si la cola se llena, se omite el trabajo nuevo y se informa por serie cuando la tarea de E/S puede atender el aviso. Los avisos repetidos del mismo tipo se agrupan. Para un acceso omitido, retira y vuelve a presentar la tarjeta tras el antirrebote. Si no hay WiFi al procesar un acceso, se informa y se omite el envío sin reintento automático.
+
+Las solicitudes HTTP siguen siendo síncronas dentro de la tarea y conservan los tiempos de espera de 3 s para conexión y lectura. Una respuesta lenta puede retrasar la lectura DHT22 o el envío de trabajos en cola, mientras el sondeo RFID continúa. Se omiten con aviso las mediciones que pasan 15 s en cola para evitar una ráfaga de muestras atrasadas.
 
 Para la prueba física, abre el monitor serie a 115200 baudios. Mantén una tarjeta registrada en el lector más de 3 s y confirma que aparece un solo registro. Retírala y vuelve a presentarla tras el intervalo para comprobar la alternancia entrada/salida. Prueba también dos tarjetas distintas seguidas, una desconocida y una lectura con la red desconectada. Confirma que las mediciones continúan al restablecer la red.
+
+Para validar la separación de tareas, retrasa deliberadamente la respuesta de una medición en un entorno de prueba. Presenta y retira una tarjeta durante esa espera y comprueba que se registre al terminar el POST de medición. Repite con varias tarjetas y confirma el orden. Si se satura la cola, verifica los avisos en el monitor serie y vuelve a presentar la tarjeta omitida.
