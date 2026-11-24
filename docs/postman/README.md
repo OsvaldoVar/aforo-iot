@@ -1,6 +1,6 @@
 # Colección Postman — Aforo IoT
 
-Pruebas automatizadas de autenticación, ESP32, consultas y gestión de la app, límites y alertas S3-A1/A2.
+Pruebas automatizadas de autenticación, ESP32, consultas y gestión de la app, límites y alertas S3-A1/A2 y comandos S3-A3.
 
 ## Requisitos previos
 
@@ -57,3 +57,16 @@ La carpeta crea un dispositivo y dos personas con tarjetas aleatorias. Conserva 
 Las pruebas cubren POST/PUT/GET, rangos y tipos inválidos, autenticación, igualdad exacta con el límite, temperatura y humedad por separado, duplicados, atención y reapertura, filtros y aforo. La última entrada de la persona rechazada demuestra que el rechazo anterior no dejó un registro; ambas personas terminan fuera.
 
 Al terminar, eliminar únicamente los recursos creados por esa ejecución. Usar los tres identificadores exportados y verificar que correspondan a los recursos `Prueba S3` antes de limpiar. Dentro de una transacción, eliminar primero `registros_acceso` del dispositivo de prueba, después el dispositivo (sus límites, mediciones y alertas se eliminan por cascada), y finalmente las dos personas. No borrar recursos ajenos ni reiniciar la base de datos.
+
+## Comandos S3-A3
+
+La carpeta **S3 Comandos** contiene 9 peticiones. Ejecutarla completa y en orden en Collection Runner o Newman con `token` válido, `base_url` configurada y el dispositivo seed activo con `api_key` `demo-esp32-key-0001`. Localiza su ID sin asumir que sea 1 y guarda `s3_comandos_dispositivo_id`, `s3_comandos_api_key` y `s3_comando_id` en variables de colección.
+
+```bash
+newman run docs/postman/aforo-iot.postman_collection.json \
+  --folder 'S3 Comandos' \
+  --env-var 'base_url=http://127.0.0.1:8081/api_aforo' \
+  --env-var "token=$TOKEN_PRUEBAS"
+```
+
+El vaciado inicial repite `GET esp32/comando.php` hasta recibir `comando: null`: marca como `ejecutado` cada comando pendiente previo del seed. Usar datos de pruebas y detener otros productores y consumidores de comandos para ese dispositivo durante la ejecución; el botón Send no repite automáticamente el vaciado. Después comprueba 401 sin token, 400 con acción inválida, 401 con clave inválida, encolado de `abrir_acceso` con 201 y estado `pendiente`, entrega del mismo ID como `ejecutado`, segunda consulta con `comando: null` y presencia del comando ejecutado en el listado de la app filtrado por dispositivo. El comando permanece en el historial.
