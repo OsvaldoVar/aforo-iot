@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,14 +23,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class PersonasFragment extends Fragment {
-    private static final String RUTA = "app/personas.php";
-
+    private OperacionPersonas operacion;
     private PersonasAdapter adaptador;
     private JSONArray personas = new JSONArray();
     private Request<JSONObject> consulta;
     private AlertDialog dialogo;
     private boolean ocupada;
     private Snackbar avisoReintento;
+    private Snackbar avisoOperacion;
 
     public PersonasFragment() {
         super(R.layout.fragment_personas);
@@ -44,10 +45,20 @@ public class PersonasFragment extends Fragment {
         lista.setAdapter(adaptador);
         vista.findViewById(R.id.fabRegistrarPersona).setOnClickListener(v -> pedirNombre(null));
         vista.findViewById(R.id.btnReintentarPersonas).setOnClickListener(v -> cargarListas());
-        cargarListas();
+        operacion = new ViewModelProvider(requireActivity()).get(OperacionPersonas.class);
+        operacion.resultado().observe(getViewLifecycleOwner(), this::mostrarResultado);
+        // El GET debe comenzar después del POST que sobrevivió a la vista anterior.
+        if (operacion.enCurso() || operacion.resultado().getValue() != null) {
+            habilitarAcciones(false);
+        } else {
+            cargarListas();
+        }
     }
 
     private void cargarListas() {
+        if (operacion.enCurso()) {
+            return;
+        }
         View vista = requireView();
         if (avisoReintento != null) {
             avisoReintento.dismiss();
@@ -59,7 +70,7 @@ public class PersonasFragment extends Fragment {
         habilitarAcciones(false);
         vista.findViewById(R.id.progresoPersonas).setVisibility(View.VISIBLE);
         vista.findViewById(R.id.btnReintentarPersonas).setVisibility(View.GONE);
-        consulta = Api.get(requireContext(), RUTA, respuesta -> {
+        consulta = Api.getSinCache(requireContext(), OperacionPersonas.RUTA, respuesta -> {
             if (getView() != vista) {
                 return;
             }
@@ -95,9 +106,11 @@ public class PersonasFragment extends Fragment {
         View vista = requireView();
         vista.findViewById(R.id.progresoPersonas).setVisibility(View.GONE);
         vista.findViewById(R.id.btnReintentarPersonas).setVisibility(View.VISIBLE);
-        avisoReintento = Snackbar.make(vista, mensaje, Snackbar.LENGTH_LONG)
-                .setAction(R.string.reintentar_personas, v -> cargarListas());
-        avisoReintento.show();
+        if (avisoOperacion == null || !avisoOperacion.isShownOrQueued()) {
+            avisoReintento = Snackbar.make(vista, mensaje, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.reintentar, v -> cargarListas());
+            avisoReintento.show();
+        }
     }
 
     private void habilitarAcciones(boolean habilitadas) {
@@ -205,29 +218,42 @@ public class PersonasFragment extends Fragment {
         }
 
         habilitarAcciones(false);
-        Api.postSinReintento(requireContext(), RUTA, cuerpo, respuesta -> {
-            if (getView() != vista) {
-                return;
+        int mensajeExito = uid == null ? R.string.persona_creada : R.string.tarjeta_asignada;
+        operacion.guardar(requireContext().getApplicationContext(), cuerpo, mensajeExito);
+    }
+
+    private void mostrarResultado(@Nullable OperacionPersonas.Resultado resultado) {
+        if (resultado == null) {
+            return;
+        }
+        operacion.consumirResultado();
+        if (resultado.error != null && sesionVencida(resultado.error)) {
+            return;
+        }
+
+        if (resultado.error != null) {
+            boolean conflicto = resultado.error.networkResponse != null
+                    && resultado.error.networkResponse.statusCode == 409;
+            avisoOperacion = Snackbar.make(requireView(),
+                    Api.mensajeDeError(requireContext(), resultado.error),
+                    conflicto ? Snackbar.LENGTH_INDEFINITE : Snackbar.LENGTH_LONG);
+            if (conflicto) {
+                avisoOperacion.setAction(android.R.string.ok, v -> { });
             }
-            int texto = respuesta.optBoolean("success")
-                    ? (uid == null ? R.string.persona_creada : R.string.tarjeta_asignada)
-                    : R.string.error_servidor;
-            Snackbar.make(vista, respuesta.optString("mensaje", getString(texto)),
-                    Snackbar.LENGTH_LONG).show();
-            cargarListas();
-        }, error -> {
-            if (getView() != vista || sesionVencida(error)) {
-                return;
-            }
-            Snackbar.make(vista, Api.mensajeDeError(requireContext(), error), Snackbar.LENGTH_LONG).show();
-            // Un fallo de red puede llegar después de que el servidor guardó el cambio.
-            cargarListas();
-        });
+        } else {
+            JSONObject respuesta = resultado.respuesta;
+            int texto = respuesta.optBoolean("success") ? resultado.mensajeExito : R.string.error_servidor;
+            avisoOperacion = Snackbar.make(requireView(),
+                    respuesta.optString("mensaje", getString(texto)), Snackbar.LENGTH_LONG);
+        }
+        avisoOperacion.show();
+        // La lista puede haber cambiado aunque se haya perdido la respuesta del POST.
+        cargarListas();
     }
 
     private boolean sesionVencida(VolleyError error) {
-        if (error.networkResponse != null && error.networkResponse.statusCode == 401) {
-            ((MainActivity) requireActivity()).cerrarSesion();
+        if (Api.esNoAutorizado(error)) {
+            ManejoErrores.manejar(requireActivity(), null, error, null, true);
             return true;
         }
         return false;
@@ -246,6 +272,10 @@ public class PersonasFragment extends Fragment {
         if (avisoReintento != null) {
             avisoReintento.dismiss();
             avisoReintento = null;
+        }
+        if (avisoOperacion != null) {
+            avisoOperacion.dismiss();
+            avisoOperacion = null;
         }
         adaptador = null;
         super.onDestroyView();

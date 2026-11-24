@@ -18,14 +18,17 @@ if ($uid === '') {
 }
 
 try {
+    // El bloqueo por dispositivo evita entradas simultáneas por encima del aforo.
+    $pdo->beginTransaction();
     // 1. Validar dispositivo activo y actualizar última conexión
     $consulta = $pdo->prepare(
-        'SELECT id FROM dispositivos WHERE api_key = ? AND activo = 1 LIMIT 1'
+        'SELECT id FROM dispositivos WHERE api_key = ? AND activo = 1 LIMIT 1 FOR UPDATE'
     );
     $consulta->execute([$apiKey]);
     $dispositivo = $consulta->fetch();
 
     if (!$dispositivo) {
+        $pdo->rollBack();
         responder(false, 'Dispositivo no autorizado o inactivo', null, 401);
     }
 
@@ -49,6 +52,8 @@ try {
         );
         $pendiente->execute([$uid, $dispositivoId, $dispositivoId]);
 
+        $pdo->commit();
+
         responder(false, 'Tarjeta no registrada', [
             'error' => 'tarjeta_no_registrada',
             'uid' => $uid,
@@ -69,6 +74,34 @@ try {
     $tipo = ($ultimo === 'entrada') ? 'salida' : 'entrada';
 
     // S3-A2: negar entrada si se alcanzo aforo_max
+    if ($tipo === 'entrada') {
+        $consulta = $pdo->prepare('SELECT aforo_max FROM limites WHERE dispositivo_id = ?');
+        $consulta->execute([$dispositivoId]);
+        $aforoMax = $consulta->fetchColumn();
+
+        $consulta = $pdo->prepare('SELECT COUNT(*) FROM personas_dentro WHERE dispositivo_id = ?');
+        $consulta->execute([$dispositivoId]);
+        $dentro = (int) $consulta->fetchColumn();
+
+        if ($aforoMax !== false && $dentro >= (int) $aforoMax) {
+            $consulta = $pdo->prepare(
+                'SELECT id FROM alertas WHERE dispositivo_id = ? AND tipo = ? AND atendida = 0 LIMIT 1 FOR UPDATE'
+            );
+            $consulta->execute([$dispositivoId, 'aforo']);
+            if (!$consulta->fetch()) {
+                $insertarAlerta = $pdo->prepare(
+                    'INSERT INTO alertas (dispositivo_id, tipo, mensaje, valor) VALUES (?, ?, ?, ?)'
+                );
+                $insertarAlerta->execute([$dispositivoId, 'aforo', 'Aforo lleno, acceso denegado', $dentro]);
+            }
+            $pdo->commit();
+            responder(false, 'Aforo lleno, acceso denegado', [
+                'error' => 'aforo_lleno',
+                'nombre' => $persona['nombre'],
+                'dentro' => $dentro,
+            ]);
+        }
+    }
 
     $insertar = $pdo->prepare(
         'INSERT INTO registros_acceso (persona_id, dispositivo_id, tipo) VALUES (?, ?, ?)'
@@ -81,12 +114,17 @@ try {
     $consulta->execute([$dispositivoId]);
     $dentro = (int) $consulta->fetchColumn();
 
+    $pdo->commit();
+
     responder(true, ucfirst($tipo) . ' registrada', [
         'tipo' => $tipo,
         'nombre' => $persona['nombre'],
         'dentro' => $dentro,
     ]);
 } catch (PDOException $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     error_log('Error SQL en esp32/acceso.php: ' . $e->getMessage());
     responder(false, 'Error interno al procesar el acceso', null, 500);
 }

@@ -61,19 +61,27 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        int titulo = tituloDe(itemId);
         Fragment pantalla;
-        if (itemId == R.id.navPersonas) {
+        int titulo;
+        if (itemId == R.id.navDashboard) {
+            pantalla = new DashboardFragment();
+            titulo = R.string.menu_dashboard;
+        } else if (itemId == R.id.navPersonas) {
             pantalla = new PersonasFragment();
-        } else if (itemId == R.id.navHistorial) {
-            pantalla = PantallaVaciaFragment.newInstance(
-                    R.drawable.ic_historial, titulo, R.string.vacio_historial);
-        } else if (itemId == R.id.navMas) {
-            pantalla = PantallaVaciaFragment.newInstance(
-                    R.drawable.ic_mas, titulo, R.string.vacio_mas);
+            titulo = R.string.menu_personas;
         } else {
-            pantalla = PantallaVaciaFragment.newInstance(
-                    R.drawable.ic_dashboard, titulo, R.string.vacio_dashboard);
+            int icono;
+            int detalle;
+            if (itemId == R.id.navHistorial) {
+                icono = R.drawable.ic_historial;
+                titulo = R.string.menu_historial;
+                detalle = R.string.vacio_historial;
+            } else {
+                icono = R.drawable.ic_mas;
+                titulo = R.string.menu_mas;
+                detalle = R.string.vacio_mas;
+            }
+            pantalla = PantallaVaciaFragment.newInstance(icono, titulo, detalle);
         }
 
         getSupportFragmentManager()
@@ -107,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
-    void cerrarSesion() {
+    private void cerrarSesion() {
         sesion.cerrarSesion();
         abrirLogin();
     }

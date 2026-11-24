@@ -21,6 +21,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextInputEditText etCorreo;
     private TextInputEditText etContrasena;
     private MaterialButton btnLogin;
+    private MaterialButton btnIrRegistro;
     private SessionManager sesion;
 
     private final ActivityResultLauncher<Intent> registroLauncher =
@@ -47,9 +48,10 @@ public class LoginActivity extends AppCompatActivity {
         etCorreo = findViewById(R.id.etCorreo);
         etContrasena = findViewById(R.id.etContrasena);
         btnLogin = findViewById(R.id.btnLogin);
+        btnIrRegistro = findViewById(R.id.btnIrRegistro);
 
         btnLogin.setOnClickListener(v -> iniciarSesion());
-        findViewById(R.id.btnIrRegistro).setOnClickListener(v ->
+        btnIrRegistro.setOnClickListener(v ->
                 registroLauncher.launch(new Intent(this, RegistroActivity.class)));
     }
 
@@ -83,12 +85,18 @@ public class LoginActivity extends AppCompatActivity {
         bloquear(true);
         Api.post(this, "auth/login.php", cuerpo,
                 respuesta -> {
+                    if (isFinishing() || isDestroyed()) {
+                        return;
+                    }
                     bloquear(false);
                     procesarLogin(respuesta);
                 },
                 error -> {
+                    if (isFinishing() || isDestroyed()) {
+                        return;
+                    }
                     bloquear(false);
-                    mostrarMensaje(Api.mensajeDeError(this, error));
+                    ManejoErrores.manejar(this, btnLogin, error, this::iniciarSesion, false);
                 });
     }
 
@@ -115,6 +123,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void bloquear(boolean bloqueado) {
         btnLogin.setEnabled(!bloqueado);
+        btnIrRegistro.setEnabled(!bloqueado);
     }
 
     private void mostrarMensaje(String mensaje) {

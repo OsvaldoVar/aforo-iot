@@ -24,24 +24,52 @@ public final class Api {
     private Api() {
     }
 
+    public static void get(Context contexto, String ruta,
+            Response.Listener<JSONObject> alResponder, Response.ErrorListener alFallar) {
+        solicitud(contexto, Request.Method.GET, ruta, null, 1, true, alResponder, alFallar);
+    }
+
     public static void post(Context contexto, String ruta, JSONObject cuerpo,
             Response.Listener<JSONObject> alResponder, Response.ErrorListener alFallar) {
-        solicitar(contexto, Request.Method.POST, ruta, cuerpo, 1, alResponder, alFallar);
+        solicitud(contexto, Request.Method.POST, ruta, cuerpo, 1, true, alResponder, alFallar);
+    }
+
+    public static Request<JSONObject> getSinCache(Context contexto, String ruta,
+            Response.Listener<JSONObject> alResponder, Response.ErrorListener alFallar) {
+        return solicitud(contexto, Request.Method.GET, ruta, null, 1, false, alResponder, alFallar);
     }
 
     public static void postSinReintento(Context contexto, String ruta, JSONObject cuerpo,
             Response.Listener<JSONObject> alResponder, Response.ErrorListener alFallar) {
-        solicitar(contexto, Request.Method.POST, ruta, cuerpo, 0, alResponder, alFallar);
+        solicitud(contexto, Request.Method.POST, ruta, cuerpo, 0, false, alResponder, alFallar);
     }
 
-    public static Request<JSONObject> get(Context contexto, String ruta,
+    public static boolean esNoAutorizado(VolleyError error) {
+        return error.networkResponse != null && error.networkResponse.statusCode == 401;
+    }
+
+    public static String mensajeDeError(Context contexto, VolleyError error) {
+        NetworkResponse respuesta = error.networkResponse;
+        if (respuesta != null) {
+            if (respuesta.data != null) {
+                try {
+                    JSONObject json = new JSONObject(new String(respuesta.data, StandardCharsets.UTF_8));
+                    String mensaje = json.optString("mensaje", "");
+                    if (!mensaje.isEmpty()) {
+                        return mensaje;
+                    }
+                } catch (JSONException ignorada) {
+                    // El servidor respondió sin JSON; se usa el mensaje de error genérico.
+                }
+            }
+            return contexto.getString(R.string.error_servidor);
+        }
+        return contexto.getString(R.string.error_conexion);
+    }
+
+    private static Request<JSONObject> solicitud(Context contexto, int metodo, String ruta,
+            JSONObject cuerpo, int reintentos, boolean usarCache,
             Response.Listener<JSONObject> alResponder, Response.ErrorListener alFallar) {
-        return solicitar(contexto, Request.Method.GET, ruta, null, 1, alResponder, alFallar);
-    }
-
-    private static Request<JSONObject> solicitar(Context contexto, int metodo, String ruta,
-            JSONObject cuerpo, int reintentos, Response.Listener<JSONObject> alResponder,
-            Response.ErrorListener alFallar) {
         Context aplicacion = contexto.getApplicationContext();
         JsonObjectRequest solicitud = new JsonObjectRequest(
                 metodo, Config.BASE_URL + ruta, cuerpo, alResponder, alFallar) {
@@ -56,26 +84,8 @@ public final class Api {
             }
         };
         solicitud.setRetryPolicy(new DefaultRetryPolicy(10000, reintentos, 1f));
-        if (metodo == Request.Method.GET) {
-            solicitud.setShouldCache(false);
-        }
+        solicitud.setShouldCache(usarCache);
         return cola(aplicacion).add(solicitud);
-    }
-
-    public static String mensajeDeError(Context contexto, VolleyError error) {
-        NetworkResponse respuesta = error.networkResponse;
-        if (respuesta != null && respuesta.data != null) {
-            try {
-                JSONObject json = new JSONObject(new String(respuesta.data, StandardCharsets.UTF_8));
-                String mensaje = json.optString("mensaje", "");
-                if (!mensaje.isEmpty()) {
-                    return mensaje;
-                }
-            } catch (JSONException ignorada) {
-                // La respuesta no era JSON; se usa el mensaje genérico.
-            }
-        }
-        return contexto.getString(R.string.error_conexion);
     }
 
     private static synchronized RequestQueue cola(Context contexto) {
