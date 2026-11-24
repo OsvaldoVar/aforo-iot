@@ -6,3 +6,17 @@
 4. Carga `esp32_aforo.ino` y abre el monitor serie a **115200 baudios**. El firmware intenta registrar una medición cada 15 segundos y confirma el registro cuando recibe HTTP 200 y `success: true`. Si no hay WiFi o la lectura es inválida, omite ese envío y continúa en el siguiente intervalo.
 
 Para la prueba de integración, comprueba que aparezca una fila en `mediciones` después del mensaje de confirmación. Las pruebas con el equipo físico corresponden al [Issue #31](https://github.com/OsvaldoVar/aforo-iot/issues/31).
+
+## Señalización de acceso
+
+| Resultado | Señal |
+| --- | --- |
+| Entrada o salida confirmada | LED verde durante 2 s, sin sonido. |
+| Acceso denegado, tarjeta desconocida o respuesta sin confirmación | LED rojo durante 2 s y dos pitidos de 100 ms separados por 100 ms. |
+| Reposo | Ambos LEDs apagados y buzzer en silencio. |
+
+Conecta el LED verde a GPIO 25 y el rojo a GPIO 26, cada uno con una resistencia de 220 Ω. El buzzer piezoeléctrico del diagrama usa GPIO 27 y un tono de 2 kHz. Verifica la tensión y corriente del buzzer físico antes de conectarlo y usa un circuito de control si el modelo lo requiere. [Montaje en protoboard](../../docs/hardware/s1_b1_montaje_protoboard.md)
+
+Queda pendiente conectar `indicarRespuestaAcceso(codigoHttp, cuerpo)` a la llamada real a `esp32/acceso.php` del [Issue #43](https://github.com/OsvaldoVar/aforo-iot/issues/43). El LED verde requiere HTTP 200, `success: true` booleano y `tipo: entrada` o `salida`. Los fallos de medición del DHT22 siguen su flujo independiente.
+
+Tras integrar el lector, prueba una tarjeta autorizada, una desconocida y una lectura con la API desconectada. Comprueba el color, los pitidos, el retorno a reposo y el cambio entre resultados seguidos. Verifica en el monitor serie que continúen las mediciones y graba un video corto de los casos permitido y denegado para el [Issue #45](https://github.com/OsvaldoVar/aforo-iot/issues/45).

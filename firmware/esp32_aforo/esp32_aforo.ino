@@ -3,9 +3,16 @@
 #include <ArduinoJson.h>
 #include <DHT.h>
 #include <math.h>
+#include <string.h>
 #include "config.h"
 
 #define DHT_PIN 4
+#define LED_VERDE 25
+#define LED_ROJO 26
+#define BUZZER 27
+#define DURACION_INDICADOR_MS 2000UL
+#define DURACION_PITIDO_MS 100UL
+#define FRECUENCIA_BUZZER_HZ 2000
 #define INTERVALO_MEDICION 15000UL
 #define INTERVALO_RECONEXION 10000UL
 #define TIEMPO_ESPERA_HTTP_MS 3000
@@ -14,6 +21,63 @@ DHT dht(DHT_PIN, DHT22);
 unsigned long ultimaMedicion = 0;
 unsigned long ultimoIntentoWifi = 0;
 bool wifiConectado = false;
+
+unsigned long inicioIndicador = 0;
+bool indicadorActivo = false;
+bool indicadorDenegado = false;
+bool buzzerActivo = false;
+
+void ajustarBuzzer(bool sonar) {
+    if (sonar == buzzerActivo) {
+        return;
+    }
+    buzzerActivo = sonar;
+    if (sonar) {
+        tone(BUZZER, FRECUENCIA_BUZZER_HZ);
+    } else {
+        noTone(BUZZER);
+    }
+}
+
+void actualizarIndicador(unsigned long ahora) {
+    if (!indicadorActivo) {
+        return;
+    }
+
+    const unsigned long transcurrido = ahora - inicioIndicador;
+    if (transcurrido >= DURACION_INDICADOR_MS) {
+        digitalWrite(LED_VERDE, LOW);
+        digitalWrite(LED_ROJO, LOW);
+        ajustarBuzzer(false);
+        indicadorActivo = false;
+        return;
+    }
+
+    // Dos pulsos de 100 ms separados por 100 ms de silencio.
+    ajustarBuzzer(indicadorDenegado && (transcurrido < DURACION_PITIDO_MS
+            || (transcurrido >= 2 * DURACION_PITIDO_MS && transcurrido < 3 * DURACION_PITIDO_MS)));
+}
+
+void indicarRespuestaAcceso(int codigoHttp, const String& cuerpo) {
+    JsonDocument respuesta;
+    bool permitido = false;
+    if (codigoHttp == HTTP_CODE_OK && !deserializeJson(respuesta, cuerpo)
+            && respuesta["success"].is<bool>() && respuesta["success"].as<bool>()) {
+        const char* tipo = respuesta["tipo"] | "";
+        permitido = strcmp(tipo, "entrada") == 0 || strcmp(tipo, "salida") == 0;
+    }
+
+    // Apaga la señal anterior antes de iniciar la nueva.
+    digitalWrite(LED_VERDE, LOW);
+    digitalWrite(LED_ROJO, LOW);
+    ajustarBuzzer(false);
+
+    inicioIndicador = millis();
+    indicadorDenegado = !permitido;
+    indicadorActivo = true;
+    digitalWrite(permitido ? LED_VERDE : LED_ROJO, HIGH);
+    actualizarIndicador(inicioIndicador);
+}
 
 void actualizarWifi(unsigned long ahora) {
     const bool conectado = WiFi.status() == WL_CONNECTED;
@@ -84,6 +148,12 @@ void enviarMedicion() {
 
 void setup() {
     Serial.begin(115200);
+    pinMode(LED_VERDE, OUTPUT);
+    pinMode(LED_ROJO, OUTPUT);
+    pinMode(BUZZER, OUTPUT);
+    digitalWrite(LED_VERDE, LOW);
+    digitalWrite(LED_ROJO, LOW);
+    digitalWrite(BUZZER, LOW);
     dht.begin();
 
     WiFi.mode(WIFI_STA);
@@ -95,6 +165,7 @@ void setup() {
 
 void loop() {
     const unsigned long ahora = millis();
+    actualizarIndicador(ahora);
     actualizarWifi(ahora);
 
     if (ahora - ultimaMedicion >= INTERVALO_MEDICION) {
