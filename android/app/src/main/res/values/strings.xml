@@ -33,4 +33,21 @@
   <string name="vacio_historial">Aquí verás los accesos y las mediciones.</string>
   <string name="vacio_personas">Aquí verás las personas dentro y las tarjetas pendientes.</string>
   <string name="vacio_mas">Dispositivos, alertas, límites y gráficas.</string>
+
+  <string name="esp32_en_linea">ESP32 en línea</string>
+  <string name="esp32_sin_conexion">ESP32 sin conexión</string>
+  <string name="personas_dentro">Personas dentro</string>
+  <string name="temperatura">Temperatura</string>
+  <string name="humedad">Humedad</string>
+  <string name="temperatura_vacia">-- °C</string>
+  <string name="humedad_vacia">-- %</string>
+  <string name="temperatura_formato">%1$.1f °C</string>
+  <string name="humedad_formato">%1$.1f %%</string>
+  <string name="aforo_maximo_valor">/ %1$d</string>
+  <string name="detalle_aforo">%1$d de %2$d personas</string>
+  <string name="aforo_no_configurado">Aforo máximo no configurado</string>
+  <string name="cero">0</string>
+  <string name="cargando">Cargando…</string>
+  <string name="actualizado">Actualizado %1$s</string>
+  <string name="actualizado_vacio">Actualizado --:--:--</string>
 </resources>

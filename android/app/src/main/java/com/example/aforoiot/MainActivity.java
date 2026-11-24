@@ -61,28 +61,30 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        int icono;
+        Fragment pantalla;
         int titulo;
-        int detalle;
-        if (itemId == R.id.navHistorial) {
-            icono = R.drawable.ic_historial;
-            titulo = R.string.menu_historial;
-            detalle = R.string.vacio_historial;
-        } else if (itemId == R.id.navPersonas) {
-            icono = R.drawable.ic_personas;
-            titulo = R.string.menu_personas;
-            detalle = R.string.vacio_personas;
-        } else if (itemId == R.id.navMas) {
-            icono = R.drawable.ic_mas;
-            titulo = R.string.menu_mas;
-            detalle = R.string.vacio_mas;
-        } else {
-            icono = R.drawable.ic_dashboard;
+        if (itemId == R.id.navDashboard) {
+            pantalla = new DashboardFragment();
             titulo = R.string.menu_dashboard;
-            detalle = R.string.vacio_dashboard;
+        } else {
+            int icono;
+            int detalle;
+            if (itemId == R.id.navHistorial) {
+                icono = R.drawable.ic_historial;
+                titulo = R.string.menu_historial;
+                detalle = R.string.vacio_historial;
+            } else if (itemId == R.id.navPersonas) {
+                icono = R.drawable.ic_personas;
+                titulo = R.string.menu_personas;
+                detalle = R.string.vacio_personas;
+            } else {
+                icono = R.drawable.ic_mas;
+                titulo = R.string.menu_mas;
+                detalle = R.string.vacio_mas;
+            }
+            pantalla = PantallaVaciaFragment.newInstance(icono, titulo, detalle);
         }
 
-        Fragment pantalla = PantallaVaciaFragment.newInstance(icono, titulo, detalle);
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.contenedorPantalla, pantalla)
