@@ -3726,6 +3726,459 @@
           }
         }
       ]
+    },
+    {
+      "name": "S3 Comandos",
+      "description": "Ejecutar en orden con token válido en Collection Runner o Newman. Localiza el dispositivo seed demo-esp32-key-0001 y vacía su cola antes de encolar abrir_acceso. El vaciado marca los comandos previos como ejecutados. Conserva dispositivo y comando en variables s3_comandos_dispositivo_id y s3_comando_id.",
+      "item": [
+        {
+          "name": "S3 Identificar dispositivo seed para comandos",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.unset('s3_comandos_dispositivo_id');",
+                  "pm.collectionVariables.unset('s3_comandos_api_key');",
+                  "pm.collectionVariables.unset('s3_comando_id');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Identificar dispositivo seed para comandos', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.dispositivos).to.be.an('array');",
+                  "    const dispositivo = json.dispositivos.find(d => d.api_key === 'demo-esp32-key-0001');",
+                  "    pm.expect(dispositivo, 'Dispositivo seed activo requerido').to.be.an('object');",
+                  "    pm.expect(dispositivo.activo).to.eql(true);",
+                  "    pm.expect(dispositivo.id).to.be.a('number').and.be.above(0);",
+                  "    pm.collectionVariables.set('s3_comandos_dispositivo_id', String(dispositivo.id));",
+                  "    pm.collectionVariables.set('s3_comandos_api_key', dispositivo.api_key);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/dispositivos.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "dispositivos.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Comando sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Comando sin token', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/comando.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "comando.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivo_id\": {{s3_comandos_dispositivo_id}},\n  \"accion\": \"abrir_acceso\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Rechazar acción de comando inválida",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Rechazar acción de comando inválida', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/comando.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "comando.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivo_id\": {{s3_comandos_dispositivo_id}},\n  \"accion\": \"accion_invalida\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Comando con api_key inválida",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Comando con api_key inválida', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/esp32/comando.php?api_key=clave-invalida",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "comando.php"
+              ],
+              "query": [
+                {
+                  "key": "api_key",
+                  "value": "clave-invalida"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Vaciar comandos pendientes del seed",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Vaciar comandos pendientes del seed', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json).to.have.property('comando');",
+                  "    if (json.comando !== null) {",
+                  "        pm.expect(json.comando.dispositivo_id).to.eql(Number(pm.collectionVariables.get('s3_comandos_dispositivo_id')));",
+                  "        pm.expect(json.comando.estado).to.eql('ejecutado');",
+                  "        pm.expect(json.comando.fecha_ejecucion).to.be.a('string').and.not.be.empty;",
+                  "    }",
+                  "});",
+                  "// Collection Runner y Newman repiten esta petición hasta vaciar la cola.",
+                  "if (pm.response.code !== 200 || json.success !== true || !Object.prototype.hasOwnProperty.call(json, 'comando')) {",
+                  "    pm.execution.setNextRequest(null);",
+                  "} else if (json.comando !== null) {",
+                  "    pm.execution.setNextRequest(pm.info.requestId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/esp32/comando.php?api_key={{s3_comandos_api_key}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "comando.php"
+              ],
+              "query": [
+                {
+                  "key": "api_key",
+                  "value": "{{s3_comandos_api_key}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Encolar abrir_acceso pendiente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Encolar abrir_acceso pendiente', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.comando.id).to.be.a('number').and.be.above(0);",
+                  "    pm.expect(json.comando.dispositivo_id).to.eql(Number(pm.collectionVariables.get('s3_comandos_dispositivo_id')));",
+                  "    pm.expect(json.comando.accion).to.eql('abrir_acceso');",
+                  "    pm.expect(json.comando.estado).to.eql('pendiente');",
+                  "    pm.expect(json.comando.fecha_creacion).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.comando.fecha_ejecucion).to.eql(null);",
+                  "    pm.collectionVariables.set('s3_comando_id', String(json.comando.id));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/comando.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "comando.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivo_id\": {{s3_comandos_dispositivo_id}},\n  \"accion\": \"abrir_acceso\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Entregar comando como ejecutado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Entregar comando como ejecutado', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.comando.id).to.be.a('number').and.be.above(0);",
+                  "    pm.expect(json.comando.dispositivo_id).to.eql(Number(pm.collectionVariables.get('s3_comandos_dispositivo_id')));",
+                  "    pm.expect(json.comando.accion).to.eql('abrir_acceso');",
+                  "    pm.expect(json.comando.id).to.eql(Number(pm.collectionVariables.get('s3_comando_id')));",
+                  "    pm.expect(json.comando.estado).to.eql('ejecutado');",
+                  "    pm.expect(json.comando.fecha_creacion).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.comando.fecha_ejecucion).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/esp32/comando.php?api_key={{s3_comandos_api_key}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "comando.php"
+              ],
+              "query": [
+                {
+                  "key": "api_key",
+                  "value": "{{s3_comandos_api_key}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Segunda consulta sin comando pendiente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Segunda consulta sin comando pendiente', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json).to.have.property('comando', null);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/esp32/comando.php?api_key={{s3_comandos_api_key}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "comando.php"
+              ],
+              "query": [
+                {
+                  "key": "api_key",
+                  "value": "{{s3_comandos_api_key}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Listar comando ejecutado por dispositivo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Listar comando ejecutado por dispositivo', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.comandos).to.be.an('array').and.not.be.empty;",
+                  "    pm.expect(json.total).to.eql(json.comandos.length);",
+                  "    pm.expect(json.comandos.every(c => c.dispositivo_id === Number(pm.collectionVariables.get('s3_comandos_dispositivo_id')))).to.eql(true);",
+                  "    const comando = json.comandos.find(c => c.id === Number(pm.collectionVariables.get('s3_comando_id')));",
+                  "    pm.expect(comando, 'Comando encolado presente en el historial').to.be.an('object');",
+                  "    pm.expect(comando.accion).to.eql('abrir_acceso');",
+                  "    pm.expect(comando.estado).to.eql('ejecutado');",
+                  "    pm.expect(comando.fecha_ejecucion).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/comando.php?dispositivo_id={{s3_comandos_dispositivo_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "comando.php"
+              ],
+              "query": [
+                {
+                  "key": "dispositivo_id",
+                  "value": "{{s3_comandos_dispositivo_id}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
     }
   ]
 }

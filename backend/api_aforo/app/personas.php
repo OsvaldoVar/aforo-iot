@@ -71,6 +71,48 @@ function validarUidRfid(mixed $valor): string
     return $uid;
 }
 
+/**
+ * Genera un identificador único temporal para personas sin tarjeta física asignada.
+ */
+function generarUidMarcador(): string
+{
+    return 'SIN-' . strtoupper(bin2hex(random_bytes(8)));
+}
+
+/**
+ * Verifica si un UID RFID pertenece a otra persona. Si la persona propietaria
+ * está inactiva, libera la tarjeta dentro de la misma transacción asignándole
+ * un marcador temporal único ('SIN-...'), ya que la columna uid_rfid no admite NULL.
+ * Si la persona propietaria está activa, detiene la ejecución con HTTP 409.
+ */
+function liberarTarjetaSiInactiva(PDO $pdo, string $uidRfid, ?int $personaIdExcluir = null): void
+{
+    if ($personaIdExcluir !== null) {
+        $consulta = $pdo->prepare(
+            'SELECT id, activo FROM personas WHERE uid_rfid = ? AND id <> ? LIMIT 1 FOR UPDATE'
+        );
+        $consulta->execute([$uidRfid, $personaIdExcluir]);
+    } else {
+        $consulta = $pdo->prepare(
+            'SELECT id, activo FROM personas WHERE uid_rfid = ? LIMIT 1 FOR UPDATE'
+        );
+        $consulta->execute([$uidRfid]);
+    }
+
+    $duplicado = $consulta->fetch();
+    if ($duplicado) {
+        if ((int) $duplicado['activo'] === 1) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            responder(false, 'La tarjeta ya pertenece a otra persona', null, 409);
+        }
+
+        $liberar = $pdo->prepare('UPDATE personas SET uid_rfid = ? WHERE id = ?');
+        $liberar->execute([generarUidMarcador(), (int) $duplicado['id']]);
+    }
+}
+
 if ($metodo === 'GET') {
     try {
         $consultaPersonas = $pdo->prepare(
@@ -120,16 +162,11 @@ try {
         $uidCrudo = isset($datos['uid_rfid']) ? trim((string) $datos['uid_rfid']) : '';
         if ($uidCrudo !== '') {
             $uidRfid = validarUidRfid($uidCrudo);
-            $consultaDuplicado = $pdo->prepare(
-                'SELECT id FROM personas WHERE uid_rfid = ? LIMIT 1'
-            );
-            $consultaDuplicado->execute([$uidRfid]);
-            if ($consultaDuplicado->fetch()) {
-                responder(false, 'La tarjeta ya pertenece a otra persona', null, 409);
-            }
+            $pdo->beginTransaction();
+            liberarTarjetaSiInactiva($pdo, $uidRfid);
         } else {
             // Marcador único mientras la persona no tiene tarjeta RFID física asignada.
-            $uidRfid = 'SIN-' . strtoupper(bin2hex(random_bytes(8)));
+            $uidRfid = generarUidMarcador();
         }
 
         $insertar = $pdo->prepare(
@@ -137,6 +174,10 @@ try {
         );
         $insertar->execute([$nombre, $uidRfid]);
         $personaId = (int) $pdo->lastInsertId();
+
+        if ($pdo->inTransaction()) {
+            $pdo->commit();
+        }
 
         $persona = obtenerPersonaPorId($pdo, $personaId);
         responder(true, 'Persona creada', [
@@ -158,12 +199,17 @@ try {
             responder(false, 'Persona no encontrada', null, 404);
         }
 
+        $pdo->beginTransaction();
+
         $campos = [];
         $valores = [];
 
         if ($tieneNombre) {
             $nombre = trim((string) $datos['nombre']);
             if ($nombre === '' || mb_strlen($nombre) > 100) {
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
                 responder(false, 'El nombre de la persona es obligatorio y máximo de 100 caracteres', null, 400);
             }
             $campos[] = 'nombre = ?';
@@ -172,13 +218,7 @@ try {
 
         if ($tieneUid) {
             $uidRfid = validarUidRfid($datos['uid_rfid']);
-            $consultaDuplicado = $pdo->prepare(
-                'SELECT id FROM personas WHERE uid_rfid = ? AND id <> ? LIMIT 1'
-            );
-            $consultaDuplicado->execute([$uidRfid, $personaId]);
-            if ($consultaDuplicado->fetch()) {
-                responder(false, 'La tarjeta ya pertenece a otra persona', null, 409);
-            }
+            liberarTarjetaSiInactiva($pdo, $uidRfid, $personaId);
             $campos[] = 'uid_rfid = ?';
             $valores[] = $uidRfid;
         }
@@ -188,6 +228,8 @@ try {
             'UPDATE personas SET ' . implode(', ', $campos) . ' WHERE id = ?'
         );
         $actualizar->execute($valores);
+
+        $pdo->commit();
 
         $persona = obtenerPersonaPorId($pdo, $personaId);
         responder(true, 'Persona actualizada', [
@@ -243,26 +285,12 @@ try {
                 responder(false, 'Persona no encontrada', null, 404);
             }
 
-            $consultaDuplicado = $pdo->prepare(
-                'SELECT id FROM personas WHERE uid_rfid = ? AND id <> ? LIMIT 1'
-            );
-            $consultaDuplicado->execute([$uidRfid, $personaId]);
-            if ($consultaDuplicado->fetch()) {
-                $pdo->rollBack();
-                responder(false, 'La tarjeta ya pertenece a otra persona', null, 409);
-            }
+            liberarTarjetaSiInactiva($pdo, $uidRfid, $personaId);
 
             $actualizar = $pdo->prepare('UPDATE personas SET uid_rfid = ? WHERE id = ?');
             $actualizar->execute([$uidRfid, $personaId]);
         } else {
-            $consultaDuplicado = $pdo->prepare(
-                'SELECT id FROM personas WHERE uid_rfid = ? LIMIT 1'
-            );
-            $consultaDuplicado->execute([$uidRfid]);
-            if ($consultaDuplicado->fetch()) {
-                $pdo->rollBack();
-                responder(false, 'La tarjeta ya pertenece a otra persona', null, 409);
-            }
+            liberarTarjetaSiInactiva($pdo, $uidRfid);
 
             $insertar = $pdo->prepare(
                 'INSERT INTO personas (nombre, uid_rfid, activo) VALUES (?, ?, 1)'

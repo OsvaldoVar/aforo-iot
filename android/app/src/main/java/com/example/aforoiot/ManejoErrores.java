@@ -33,12 +33,11 @@ public final class ManejoErrores {
         if (vista == null) {
             return;
         }
-        Snackbar.make(vista, Api.mensajeDeError(actividad, error), Snackbar.LENGTH_LONG)
-                .setAction(R.string.reintentar, v -> {
-                    if (reintentar != null) {
-                        reintentar.run();
-                    }
-                })
-                .show();
+        Snackbar snackbar = Snackbar.make(vista, Api.mensajeDeError(actividad, error),
+                Snackbar.LENGTH_LONG);
+        if (reintentar != null) {
+            snackbar.setAction(R.string.reintentar, v -> reintentar.run());
+        }
+        snackbar.show();
     }
 }
