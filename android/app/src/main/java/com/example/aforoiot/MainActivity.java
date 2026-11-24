@@ -61,28 +61,21 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        int icono;
-        int titulo;
-        int detalle;
-        if (itemId == R.id.navHistorial) {
-            icono = R.drawable.ic_historial;
-            titulo = R.string.menu_historial;
-            detalle = R.string.vacio_historial;
-        } else if (itemId == R.id.navPersonas) {
-            icono = R.drawable.ic_personas;
-            titulo = R.string.menu_personas;
-            detalle = R.string.vacio_personas;
+        int titulo = tituloDe(itemId);
+        Fragment pantalla;
+        if (itemId == R.id.navPersonas) {
+            pantalla = new PersonasFragment();
+        } else if (itemId == R.id.navHistorial) {
+            pantalla = PantallaVaciaFragment.newInstance(
+                    R.drawable.ic_historial, titulo, R.string.vacio_historial);
         } else if (itemId == R.id.navMas) {
-            icono = R.drawable.ic_mas;
-            titulo = R.string.menu_mas;
-            detalle = R.string.vacio_mas;
+            pantalla = PantallaVaciaFragment.newInstance(
+                    R.drawable.ic_mas, titulo, R.string.vacio_mas);
         } else {
-            icono = R.drawable.ic_dashboard;
-            titulo = R.string.menu_dashboard;
-            detalle = R.string.vacio_dashboard;
+            pantalla = PantallaVaciaFragment.newInstance(
+                    R.drawable.ic_dashboard, titulo, R.string.vacio_dashboard);
         }
 
-        Fragment pantalla = PantallaVaciaFragment.newInstance(icono, titulo, detalle);
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.contenedorPantalla, pantalla)
@@ -114,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void cerrarSesion() {
+    void cerrarSesion() {
         sesion.cerrarSesion();
         abrirLogin();
     }

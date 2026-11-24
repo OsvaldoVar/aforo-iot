@@ -26,9 +26,25 @@ public final class Api {
 
     public static void post(Context contexto, String ruta, JSONObject cuerpo,
             Response.Listener<JSONObject> alResponder, Response.ErrorListener alFallar) {
+        solicitar(contexto, Request.Method.POST, ruta, cuerpo, 1, alResponder, alFallar);
+    }
+
+    public static void postSinReintento(Context contexto, String ruta, JSONObject cuerpo,
+            Response.Listener<JSONObject> alResponder, Response.ErrorListener alFallar) {
+        solicitar(contexto, Request.Method.POST, ruta, cuerpo, 0, alResponder, alFallar);
+    }
+
+    public static Request<JSONObject> get(Context contexto, String ruta,
+            Response.Listener<JSONObject> alResponder, Response.ErrorListener alFallar) {
+        return solicitar(contexto, Request.Method.GET, ruta, null, 1, alResponder, alFallar);
+    }
+
+    private static Request<JSONObject> solicitar(Context contexto, int metodo, String ruta,
+            JSONObject cuerpo, int reintentos, Response.Listener<JSONObject> alResponder,
+            Response.ErrorListener alFallar) {
         Context aplicacion = contexto.getApplicationContext();
         JsonObjectRequest solicitud = new JsonObjectRequest(
-                Request.Method.POST, Config.BASE_URL + ruta, cuerpo, alResponder, alFallar) {
+                metodo, Config.BASE_URL + ruta, cuerpo, alResponder, alFallar) {
             @Override
             public Map<String, String> getHeaders() {
                 Map<String, String> encabezados = new HashMap<>();
@@ -39,8 +55,11 @@ public final class Api {
                 return encabezados;
             }
         };
-        solicitud.setRetryPolicy(new DefaultRetryPolicy(10000, 1, 1f));
-        cola(aplicacion).add(solicitud);
+        solicitud.setRetryPolicy(new DefaultRetryPolicy(10000, reintentos, 1f));
+        if (metodo == Request.Method.GET) {
+            solicitud.setShouldCache(false);
+        }
+        return cola(aplicacion).add(solicitud);
     }
 
     public static String mensajeDeError(Context contexto, VolleyError error) {
