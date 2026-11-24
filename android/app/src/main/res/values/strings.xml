@@ -50,4 +50,7 @@
   <string name="cargando">Cargando…</string>
   <string name="actualizado">Actualizado %1$s</string>
   <string name="actualizado_vacio">Actualizado --:--:--</string>
+  <string name="quien_esta_dentro">Quién está dentro</string>
+  <string name="no_hay_personas">No hay personas dentro</string>
+  <string name="desde_hora">Desde %1$s</string>
 </resources>

@@ -151,6 +151,46 @@
       </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
+    <com.google.android.material.card.MaterialCardView
+      android:id="@+id/cardDentro"
+      style="@style/Widget.Material3.CardView.Filled"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="12dp">
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/quien_esta_dentro"
+          android:textAppearance="?attr/textAppearanceTitleMedium"
+          android:textColor="?attr/colorOnSurface" />
+
+        <TextView
+          android:id="@+id/txtSinPersonas"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="8dp"
+          android:text="@string/no_hay_personas"
+          android:textAppearance="?attr/textAppearanceBodyMedium"
+          android:textColor="?attr/colorOnSurfaceVariant"
+          android:visibility="gone" />
+
+        <androidx.recyclerview.widget.RecyclerView
+          android:id="@+id/rvDentro"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="4dp"
+          android:nestedScrollingEnabled="false" />
+
+      </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
     <TextView
       android:id="@+id/txtActualizado"
       android:layout_width="wrap_content"
