@@ -4,7 +4,7 @@ Pruebas del [Issue #81](https://github.com/OsvaldoVar/aforo-iot/issues/81), real
 
 **Equipo:** ESP32 DevKit, lector RC522, sensor DHT11, LED verde (GPIO 25), LED rojo (GPIO 26) y buzzer (GPIO 27), con la API local y la app Android en la misma red WiFi.
 
-**Firmware:** `aforo_config` de prueba, que reúne la lógica de los PR #73, #74 y #75 más la consulta de comandos de #78 y las alertas de #79. El firmware de `develop` todavía no integra RFID, LEDs ni comandos.
+**Firmware:** `aforo_config` probado en el hardware, con la lógica de #73, #74 y #75 más los comandos de #78 y las alertas de #79. Esa misma lógica quedó integrada en `firmware/esp32_aforo` mediante el PR #110.
 
 ## Tabla de resultados
 
