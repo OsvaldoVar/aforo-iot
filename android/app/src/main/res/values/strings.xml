@@ -113,4 +113,25 @@
   <string name="comando_encolado">Comando enviado</string>
   <string name="aceptar">Aceptar</string>
   <string name="dispositivo_no_disponible">No hay un dispositivo activo disponible</string>
+  <string name="limites">Límites</string>
+  <string name="alertas">Alertas</string>
+  <string name="temp_max">Temperatura máxima (°C)</string>
+  <string name="hum_max">Humedad máxima (%)</string>
+  <string name="aforo_max">Aforo máximo</string>
+  <string name="guardar_limites">Guardar límites</string>
+  <string name="dispositivo_limites">Dispositivo: %1$s (ID %2$d)</string>
+  <string name="rango_temp">Debe estar entre 0 y 60 °C</string>
+  <string name="rango_hum">Debe estar entre 0 y 100 %</string>
+  <string name="aforo_invalido">Debe ser un entero mayor que 0</string>
+  <string name="limites_guardados">Límites guardados</string>
+  <string name="alertas_sin_registros">No hay alertas registradas.</string>
+  <string name="atender">Atender</string>
+  <string name="alerta_atendida">Atendida</string>
+  <string name="alerta_pendiente">Pendiente</string>
+  <string name="tipo_temperatura">Temperatura</string>
+  <string name="tipo_humedad">Humedad</string>
+  <string name="tipo_aforo">Aforo</string>
+  <string name="tipo_alerta">Alerta</string>
+  <string name="alertas_descripcion">Revisa y atiende las alertas del sistema</string>
+  <string name="limites_descripcion">Configura aforo, temperatura y humedad</string>
 </resources>
