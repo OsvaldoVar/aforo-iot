@@ -224,7 +224,7 @@ Cola de instrucciones remotas dirigidas desde la aplicación móvil hacia el fir
 | --- | --- | --- | --- |
 | `id` | `INT UNSIGNED` | `PRIMARY KEY`, `AUTO_INCREMENT`, `NOT NULL` | Identificador secuencial único del comando encolado. |
 | `dispositivo_id` | `INT UNSIGNED` | `NOT NULL`, `FK`, `INDEX (idx_comandos_dispositivo)` | Clave foránea que referencia a `dispositivos(id)` (`ON DELETE CASCADE ON UPDATE CASCADE`). |
-| `accion` | `ENUM('abrir_acceso', 'alarma')` | `NOT NULL` | Acción física a ejecutar por los actuadores locales del microcontrolador. |
+| `accion` | `ENUM('abrir_acceso', 'alarma', 'activar_alarma')` | `NOT NULL` | Acción física a ejecutar por los actuadores locales del microcontrolador. |
 | `estado` | `ENUM('pendiente', 'ejecutado')` | `NOT NULL`, `DEFAULT 'pendiente'`, `INDEX (idx_comandos_estado)` | Estado del ciclo de vida del comando en la cola de despacho. |
 | `fecha_creacion` | `DATETIME` | `NOT NULL`, `DEFAULT CURRENT_TIMESTAMP`, `INDEX (idx_comandos_fecha_creacion)` | Marca temporal en la que el usuario generó la petición remota en la app. |
 | `fecha_ejecucion` | `DATETIME` | `NULL`, `DEFAULT NULL` | Marca temporal en la que el ESP32 consumió y confirmó el comando. |

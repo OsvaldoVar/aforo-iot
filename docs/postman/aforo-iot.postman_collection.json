@@ -4177,6 +4177,112 @@
               ]
             }
           }
+        },
+        {
+          "name": "S3 Encolar activar_alarma pendiente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Encolar activar_alarma pendiente', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.comando.id).to.be.a('number').and.be.above(0);",
+                  "    pm.expect(json.comando.dispositivo_id).to.eql(Number(pm.collectionVariables.get('s3_comandos_dispositivo_id')));",
+                  "    pm.expect(json.comando.accion).to.eql('activar_alarma');",
+                  "    pm.expect(json.comando.estado).to.eql('pendiente');",
+                  "    pm.expect(json.comando.fecha_creacion).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.comando.fecha_ejecucion).to.eql(null);",
+                  "    pm.collectionVariables.set('s3_comando_id', String(json.comando.id));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/comando.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "comando.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivo_id\": {{s3_comandos_dispositivo_id}},\n  \"accion\": \"activar_alarma\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Entregar activar_alarma como ejecutado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Entregar activar_alarma como ejecutado', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.comando.id).to.be.a('number').and.be.above(0);",
+                  "    pm.expect(json.comando.dispositivo_id).to.eql(Number(pm.collectionVariables.get('s3_comandos_dispositivo_id')));",
+                  "    pm.expect(json.comando.accion).to.eql('activar_alarma');",
+                  "    pm.expect(json.comando.id).to.eql(Number(pm.collectionVariables.get('s3_comando_id')));",
+                  "    pm.expect(json.comando.estado).to.eql('ejecutado');",
+                  "    pm.expect(json.comando.fecha_creacion).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.comando.fecha_ejecucion).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/esp32/comando.php?api_key={{s3_comandos_api_key}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "comando.php"
+              ],
+              "query": [
+                {
+                  "key": "api_key",
+                  "value": "{{s3_comandos_api_key}}"
+                }
+              ]
+            }
+          }
         }
       ]
     },
