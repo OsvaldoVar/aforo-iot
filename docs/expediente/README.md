@@ -15,8 +15,8 @@
 | 6 | Protocolo y flujo de comunicación IoT, diagrama de secuencia | B (salazar5678-web) | Sprint 3 | [05-protocolo-iot.md](./05-protocolo-iot.md) | Disponible |
 | 7 | Manual de instalación, configuración y ejecución | A (OsvaldoVar) | Sprint 3 | [instalacion.md](../instalacion.md) y [README.md](../../README.md) | Disponible |
 | 8 | Manual de usuario con capturas | C (OscarJDA) | Sprint 3 | [manual-usuario.md](../manual-usuario.md) | Disponible |
-| 9 | Reporte de pruebas: API (A), hardware (B), app (C) | Todos | Sprint 3 | [informe-pruebas-api.md](../pruebas/informe-pruebas-api.md) (API, A), [informe-pruebas-app.md](../pruebas/informe-pruebas-app.md) (app, C); `docs/pruebas/pruebas-hardware.md` (hardware, en curso en #81) | En curso |
-| 10 | Conclusiones, limitaciones, trabajo futuro y referencias | Todos | Sprint 3 | [10-conclusiones.md](./10-conclusiones.md) | Pendiente de revisión |
+| 9 | Reporte de pruebas: API (A), hardware (B), app (C) | Todos | Sprint 3 | [informe-pruebas-api.md](../pruebas/informe-pruebas-api.md) (API, A), [informe-pruebas-app.md](../pruebas/informe-pruebas-app.md) (app, C); [pruebas-hardware.md](../pruebas/pruebas-hardware.md) (hardware, B) | Disponible |
+| 10 | Conclusiones, limitaciones, trabajo futuro y referencias | Todos | Sprint 3 | [10-conclusiones.md](./10-conclusiones.md) | Disponible |
 
 ## Convenciones de documentación
 
