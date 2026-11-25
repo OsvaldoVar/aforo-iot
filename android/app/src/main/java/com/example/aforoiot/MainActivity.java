@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.appbar.MaterialToolbar;
@@ -41,7 +42,8 @@ public class MainActivity extends AppCompatActivity {
                 != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
         }
-        AlertaMonitor.iniciar(this);
+        ContextCompat.startForegroundService(this,
+                new Intent(this, AlertService.class));
 
         toolbar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.accionCerrarSesion) {
@@ -119,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void cerrarSesion() {
-        AlertaMonitor.detener();
+        stopService(new Intent(this, AlertService.class));
         sesion.cerrarSesion();
         abrirLogin();
     }
