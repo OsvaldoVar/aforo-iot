@@ -104,4 +104,13 @@
   <string name="tarjeta_confirmar">¿Asignar la tarjeta %1$s a %2$s?</string>
   <string name="tarjeta_reemplazar">¿Asignar la tarjeta %1$s a %2$s? Reemplazará su tarjeta actual (%3$s).</string>
   <string name="tarjeta_asignada">Tarjeta asignada</string>
+  <string name="abrir_acceso">Abrir acceso</string>
+  <string name="activar_alarma">Activar alarma</string>
+  <string name="confirmar_apertura">Abrir acceso</string>
+  <string name="confirmar_alarma">Activar alarma</string>
+  <string name="mensaje_confirmar_apertura">¿Abrir el acceso ahora?</string>
+  <string name="mensaje_confirmar_alarma">¿Activar la alarma en el sitio?</string>
+  <string name="comando_encolado">Comando enviado</string>
+  <string name="aceptar">Aceptar</string>
+  <string name="dispositivo_no_disponible">No hay un dispositivo activo disponible</string>
 </resources>

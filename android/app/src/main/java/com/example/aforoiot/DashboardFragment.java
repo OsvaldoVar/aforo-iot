@@ -18,11 +18,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.VolleyError;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
@@ -49,10 +52,13 @@ public class DashboardFragment extends Fragment {
     private RecyclerView rvDentro;
     private TextView txtSinPersonas;
     private PersonasDentroAdapter adaptador;
+    private MaterialButton btnAbrirAcceso;
+    private MaterialButton btnActivarAlarma;
 
     private boolean cargando;
     private boolean cargandoDentro;
     private long ultimoErrorMs;
+    private int dispositivoId;
 
     @Nullable
     @Override
@@ -75,6 +81,13 @@ public class DashboardFragment extends Fragment {
         progresoAforo = vista.findViewById(R.id.progresoAforo);
         rvDentro = vista.findViewById(R.id.rvDentro);
         txtSinPersonas = vista.findViewById(R.id.txtSinPersonas);
+        btnAbrirAcceso = vista.findViewById(R.id.btnAbrirAcceso);
+        btnActivarAlarma = vista.findViewById(R.id.btnActivarAlarma);
+
+        btnAbrirAcceso.setOnClickListener(v -> confirmarComando(
+                "abrir_acceso", R.string.confirmar_apertura, R.string.mensaje_confirmar_apertura));
+        btnActivarAlarma.setOnClickListener(v -> confirmarComando(
+                "activar_alarma", R.string.confirmar_alarma, R.string.mensaje_confirmar_alarma));
 
         adaptador = new PersonasDentroAdapter();
         rvDentro.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -136,6 +149,7 @@ public class DashboardFragment extends Fragment {
         int dentro = respuesta.optInt("dentro", 0);
         int aforoMax = respuesta.isNull("aforo_max") ? 0 : respuesta.optInt("aforo_max", 0);
         boolean enLinea = respuesta.optBoolean("en_linea", false);
+        dispositivoId = respuesta.optInt("dispositivo_id", -1);
 
         actualizarChip(enLinea);
         txtDentro.setText(String.valueOf(dentro));
@@ -228,8 +242,59 @@ public class DashboardFragment extends Fragment {
         rvDentro.setVisibility(vacio ? View.GONE : View.VISIBLE);
     }
 
-    private void manejarError(VolleyError error) {
-        cargando = false;
+    private void confirmarComando(String accion, int titulo, int mensaje) {
+        if (dispositivoId <= 0) {
+            mostrarMensaje(getString(R.string.dispositivo_no_disponible));
+            return;
+        }
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(titulo)
+                .setMessage(mensaje)
+                .setNegativeButton(R.string.cancelar, null)
+                .setPositiveButton(R.string.aceptar, (dialogo, opcion) -> enviarComando(accion))
+                .show();
+    }
+
+    private void enviarComando(String accion) {
+        JSONObject cuerpo = new JSONObject();
+        try {
+            cuerpo.put("dispositivo_id", dispositivoId);
+            cuerpo.put("accion", accion);
+        } catch (JSONException e) {
+            mostrarMensaje(getString(R.string.error_servidor));
+            return;
+        }
+
+        bloquearControles(true);
+        Api.post(requireContext(), "app/comando.php", cuerpo,
+                respuesta -> {
+                    if (!isAdded()) {
+                        return;
+                    }
+                    bloquearControles(false);
+                    if (!respuesta.optBoolean("success", false)) {
+                        mostrarMensaje(respuesta.optString("mensaje",
+                                getString(R.string.error_servidor)));
+                        return;
+                    }
+                    mostrarMensaje(respuesta.optString("mensaje",
+                            getString(R.string.comando_encolado)));
+                },
+                error -> {
+                    if (!isAdded()) {
+                        return;
+                    }
+                    bloquearControles(false);
+                    ManejoErrores.manejar(requireActivity(), getView(), error, null, true);
+                });
+    }
+
+    private void bloquearControles(boolean bloqueado) {
+        btnAbrirAcceso.setEnabled(!bloqueado);
+        btnActivarAlarma.setEnabled(!bloqueado);
+    }
+
+    private void manejarError(VolleyError error) {        cargando = false;
         if (!isAdded()) {
             return;
         }
