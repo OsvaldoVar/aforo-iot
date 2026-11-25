@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Aforo IoT - Sprint 1",
-    "description": "Colección de pruebas para los endpoints del Sprint 1 de la API Aforo IoT (diagnóstico, autenticación y comunicación con ESP32).",
+    "description": "Colección de pruebas para los endpoints del Sprint 1 de la API Aforo IoT (diagnóstico, autenticación y comunicación con ESP32). Incluye S3-A1/A2: límites por dispositivo, alertas de clima y control de aforo.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -664,6 +664,3818 @@
               "path": [
                 "esp32",
                 "acceso.php"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "App",
+      "item": [
+        {
+          "name": "Login (obtener token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Login exitoso y guarda token para endpoints de App', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.token).to.be.a('string').and.not.be.empty;",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"admin@aforoiot.local\",\n  \"password\": \"admin123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Estado OK",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Estado del dispositivo con campos planos esperados', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.dispositivo_id).to.eql(1);",
+                  "    pm.expect(json.nombre_dispositivo).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.dentro).to.be.a('number').and.be.at.least(0);",
+                  "    pm.expect(json.aforo_max).to.satisfy(function (v) { return v === null || typeof v === 'number'; });",
+                  "    pm.expect(json.en_linea).to.be.a('boolean');",
+                  "    pm.expect(json.ultima_conexion).to.satisfy(function (v) { return v === null || typeof v === 'string'; });",
+                  "    pm.expect(json.medicion).to.be.an('object');",
+                  "    pm.expect(json.medicion.temperatura).to.be.a('number');",
+                  "    pm.expect(json.medicion.humedad).to.be.a('number');",
+                  "    pm.expect(json.medicion.fecha).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/estado.php?dispositivo_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "estado.php"
+              ],
+              "query": [
+                {
+                  "key": "dispositivo_id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Estado sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Rechaza petición sin X-Token', function () {",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/app/estado.php?dispositivo_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "estado.php"
+              ],
+              "query": [
+                {
+                  "key": "dispositivo_id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Estado con token inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Rechaza petición con X-Token inválido', function () {",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "token-invalido-0000",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/estado.php?dispositivo_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "estado.php"
+              ],
+              "query": [
+                {
+                  "key": "dispositivo_id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Dentro OK",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Lista de personas dentro con total y campos esperados', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.personas).to.be.an('array');",
+                  "    pm.expect(json.total).to.eql(json.personas.length);",
+                  "    if (json.personas.length > 0) {",
+                  "        pm.expect(json.personas[0].id).to.be.a('number').and.be.above(0);",
+                  "        pm.expect(json.personas[0].nombre).to.be.a('string').and.not.be.empty;",
+                  "        pm.expect(json.personas[0].hora_entrada).to.be.a('string').and.not.be.empty;",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/dentro.php?dispositivo_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "dentro.php"
+              ],
+              "query": [
+                {
+                  "key": "dispositivo_id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Historial accesos OK",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Historial de accesos con registros, total y campos esperados', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.registros).to.be.an('array');",
+                  "    pm.expect(json.total).to.eql(json.registros.length);",
+                  "    if (json.registros.length > 0) {",
+                  "        pm.expect(json.registros[0].id).to.be.a('number').and.be.above(0);",
+                  "        pm.expect(json.registros[0].persona_id).to.be.a('number').and.be.above(0);",
+                  "        pm.expect(json.registros[0].nombre).to.be.a('string').and.not.be.empty;",
+                  "        pm.expect(json.registros[0].tipo).to.be.oneOf(['entrada', 'salida']);",
+                  "        pm.expect(json.registros[0].fecha).to.be.a('string').and.not.be.empty;",
+                  "        pm.expect(json.registros[0].dispositivo_id).to.be.a('number').and.be.above(0);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/historial_accesos.php?dispositivo_id=1&limite=50",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "historial_accesos.php"
+              ],
+              "query": [
+                {
+                  "key": "dispositivo_id",
+                  "value": "1"
+                },
+                {
+                  "key": "limite",
+                  "value": "50"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Historial mediciones OK (orden asc)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Historial de mediciones en orden ascendente con campos esperados', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.mediciones).to.be.an('array');",
+                  "    pm.expect(json.total).to.eql(json.mediciones.length);",
+                  "    if (json.mediciones.length > 0) {",
+                  "        pm.expect(json.mediciones[0].id).to.be.a('number').and.be.above(0);",
+                  "        pm.expect(json.mediciones[0].temperatura).to.be.a('number');",
+                  "        pm.expect(json.mediciones[0].humedad).to.be.a('number');",
+                  "        pm.expect(json.mediciones[0].fecha).to.be.a('string').and.not.be.empty;",
+                  "        pm.expect(json.mediciones[0].dispositivo_id).to.be.a('number').and.be.above(0);",
+                  "    }",
+                  "    if (json.mediciones.length > 1) {",
+                  "        pm.expect(json.mediciones[0].fecha <= json.mediciones[json.mediciones.length - 1].fecha).to.eql(true);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/historial_mediciones.php?dispositivo_id=1&orden=asc&limite=50",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "historial_mediciones.php"
+              ],
+              "query": [
+                {
+                  "key": "dispositivo_id",
+                  "value": "1"
+                },
+                {
+                  "key": "orden",
+                  "value": "asc"
+                },
+                {
+                  "key": "limite",
+                  "value": "50"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Historial fecha inválida 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Rechaza fecha inválida con success false', function () {",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/historial_accesos.php?desde=2026-02-30",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "historial_accesos.php"
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2026-02-30"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Gestion",
+      "item": [
+        {
+          "name": "Listar dispositivos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Lista de dispositivos con campos esperados', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.dispositivos).to.be.an('array');",
+                  "    if (json.dispositivos.length > 0) {",
+                  "        const d = json.dispositivos[0];",
+                  "        pm.expect(d.id).to.be.a('number').and.be.above(0);",
+                  "        pm.expect(d.nombre).to.be.a('string').and.not.be.empty;",
+                  "        pm.expect(d.api_key).to.be.a('string').and.not.be.empty;",
+                  "        pm.expect(d.activo).to.be.a('boolean');",
+                  "        pm.expect(d.en_linea).to.be.a('boolean');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/dispositivos.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "dispositivos.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear dispositivo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Dispositivo creado con api_key generada', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.dispositivo).to.be.an('object');",
+                  "    pm.expect(json.dispositivo.id).to.be.a('number').and.be.above(0);",
+                  "    pm.expect(json.dispositivo.api_key).to.be.a('string').and.have.lengthOf(32);",
+                  "    pm.expect(json.dispositivo.activo).to.eql(true);",
+                  "    pm.collectionVariables.set('dispositivo_creado_id', String(json.dispositivo.id));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"crear\",\n  \"nombre\": \"ESP32 Laboratorio\",\n  \"ubicacion\": \"Edificio B\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/app/dispositivos.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "dispositivos.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Editar dispositivo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Dispositivo actualizado correctamente', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.dispositivo).to.be.an('object');",
+                  "    pm.expect(json.dispositivo.nombre).to.eql('ESP32 Laboratorio Norte');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"editar\",\n  \"id\": {{dispositivo_creado_id}},\n  \"nombre\": \"ESP32 Laboratorio Norte\",\n  \"ubicacion\": \"Planta Alta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/app/dispositivos.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "dispositivos.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Desactivar dispositivo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Dispositivo marcado como inactivo', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.dispositivo.activo).to.eql(false);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"desactivar\",\n  \"id\": {{dispositivo_creado_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/app/dispositivos.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "dispositivos.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Activar dispositivo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Dispositivo reactivado correctamente', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.dispositivo.activo).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"activar\",\n  \"id\": {{dispositivo_creado_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/app/dispositivos.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "dispositivos.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar personas y pendientes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Devuelve listas de personas y tarjetas pendientes', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.personas).to.be.an('array');",
+                  "    pm.expect(json.pendientes).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/personas.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "personas.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear persona",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Persona creada correctamente', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.persona).to.be.an('object');",
+                  "    pm.expect(json.persona.id).to.be.a('number').and.be.above(0);",
+                  "    pm.expect(json.persona.activo).to.eql(true);",
+                  "    pm.collectionVariables.set('persona_creada_id', String(json.persona.id));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"crear\",\n  \"nombre\": \"Persona Demo\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/app/personas.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "personas.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Editar persona",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Nombre de persona actualizado', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.persona.nombre).to.eql('Persona Demo Editada');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"editar\",\n  \"id\": {{persona_creada_id}},\n  \"nombre\": \"Persona Demo Editada\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/app/personas.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "personas.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Asignar tarjeta pendiente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Tarjeta asignada en mayúsculas', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.persona).to.be.an('object');",
+                  "    pm.expect(json.persona.uid_rfid).to.eql('ABCD1234');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"asignar\",\n  \"persona_id\": {{persona_creada_id}},\n  \"uid_rfid\": \"ABCD1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/app/personas.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "personas.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Desactivar persona",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Persona marcada como inactiva', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.persona.activo).to.eql(false);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"desactivar\",\n  \"id\": {{persona_creada_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/app/personas.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "personas.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Activar persona",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Persona reactivada correctamente', function () {",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.persona.activo).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"activar\",\n  \"id\": {{persona_creada_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/app/personas.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "personas.php"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "S3 Límites y alertas",
+      "description": "Ejecutar en orden con token válido. Crea un dispositivo y dos personas propios; conserva sus IDs en variables s3_ para limpieza selectiva. No modifica límites de dispositivos existentes.",
+      "item": [
+        {
+          "name": "S3 Crear dispositivo propio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Crear dispositivo propio', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.collectionVariables.set('s3_dispositivo_id', String(json.dispositivo.id));",
+                  "    pm.collectionVariables.set('s3_api_key', json.dispositivo.api_key);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/dispositivos.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "dispositivos.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"crear\",\n  \"nombre\": \"Prueba S3 {{$guid}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Crear persona 1",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('s3_uid_1', pm.variables.replaceIn('{{$guid}}').replace(/-/g, '').toUpperCase());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Crear persona 1', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.collectionVariables.set('s3_persona_1_id', String(json.persona.id));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/personas.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "personas.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"crear\",\n  \"nombre\": \"Prueba S3 persona 1\",\n  \"uid_rfid\": \"{{s3_uid_1}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Crear persona 2",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('s3_uid_2', pm.variables.replaceIn('{{$guid}}').replace(/-/g, '').toUpperCase());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Crear persona 2', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.collectionVariables.set('s3_persona_2_id', String(json.persona.id));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/personas.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "personas.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"crear\",\n  \"nombre\": \"Prueba S3 persona 2\",\n  \"uid_rfid\": \"{{s3_uid_2}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Guardar límites POST",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Guardar límites POST', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.limites).to.include({temp_max: 30, hum_max: 75, aforo_max: 1});",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/limites.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "limites.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivo_id\": {{s3_dispositivo_id}},\n  \"temp_max\": 30,\n  \"hum_max\": 75,\n  \"aforo_max\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Guardar límites PUT extremos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Guardar límites PUT extremos', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.limites).to.include({temp_max: 0, hum_max: 100, aforo_max: 1});",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/limites.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "limites.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivo_id\": {{s3_dispositivo_id}},\n  \"temp_max\": 0,\n  \"hum_max\": 100,\n  \"aforo_max\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Restablecer límites de prueba",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Restablecer límites de prueba', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/limites.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "limites.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivo_id\": {{s3_dispositivo_id}},\n  \"temp_max\": 30,\n  \"hum_max\": 75,\n  \"aforo_max\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Consultar límites",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Consultar límites', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.limites).to.include({temp_max: 30, hum_max: 75, aforo_max: 1});",
+                  "    pm.expect(json.limites.dispositivo_id).to.eql(Number(pm.collectionVariables.get('s3_dispositivo_id')));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/limites.php?dispositivo_id={{s3_dispositivo_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "limites.php"
+              ],
+              "query": [
+                {
+                  "key": "dispositivo_id",
+                  "value": "{{s3_dispositivo_id}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Rechazar temp_max -1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Rechazar temp_max -1', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/limites.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "limites.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivo_id\": {{s3_dispositivo_id}},\n  \"temp_max\": -1,\n  \"hum_max\": 75,\n  \"aforo_max\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Rechazar temp_max 61",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Rechazar temp_max 61', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/limites.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "limites.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivo_id\": {{s3_dispositivo_id}},\n  \"temp_max\": 61,\n  \"hum_max\": 75,\n  \"aforo_max\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Rechazar hum_max -1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Rechazar hum_max -1', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/limites.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "limites.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivo_id\": {{s3_dispositivo_id}},\n  \"temp_max\": 30,\n  \"hum_max\": -1,\n  \"aforo_max\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Rechazar hum_max 101",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Rechazar hum_max 101', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/limites.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "limites.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivo_id\": {{s3_dispositivo_id}},\n  \"temp_max\": 30,\n  \"hum_max\": 101,\n  \"aforo_max\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Rechazar aforo_max 0",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Rechazar aforo_max 0', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/limites.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "limites.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivo_id\": {{s3_dispositivo_id}},\n  \"temp_max\": 30,\n  \"hum_max\": 75,\n  \"aforo_max\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Rechazar aforo_max 1.5",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Rechazar aforo_max 1.5', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/limites.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "limites.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivo_id\": {{s3_dispositivo_id}},\n  \"temp_max\": 30,\n  \"hum_max\": 75,\n  \"aforo_max\": 1.5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Rechazar aforo_max True",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Rechazar aforo_max True', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/limites.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "limites.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivo_id\": {{s3_dispositivo_id}},\n  \"temp_max\": 30,\n  \"hum_max\": 75,\n  \"aforo_max\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Límites sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Límites sin token', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/app/limites.php?dispositivo_id={{s3_dispositivo_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "limites.php"
+              ],
+              "query": [
+                {
+                  "key": "dispositivo_id",
+                  "value": "{{s3_dispositivo_id}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Alertas sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Alertas sin token', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/app/alertas.php?dispositivo_id={{s3_dispositivo_id}}&atendida=0&limite=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "alertas.php"
+              ],
+              "query": [
+                {
+                  "key": "dispositivo_id",
+                  "value": "{{s3_dispositivo_id}}"
+                },
+                {
+                  "key": "atendida",
+                  "value": "0"
+                },
+                {
+                  "key": "limite",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Filtro inválido atendida=2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Filtro inválido atendida=2', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/alertas.php?atendida=2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "alertas.php"
+              ],
+              "query": [
+                {
+                  "key": "atendida",
+                  "value": "2"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Filtro inválido limite=0",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Filtro inválido limite=0', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/alertas.php?limite=0",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "alertas.php"
+              ],
+              "query": [
+                {
+                  "key": "limite",
+                  "value": "0"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Filtro inválido limit=0",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Filtro inválido limit=0', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/alertas.php?limit=0",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "alertas.php"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "0"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Alerta id inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Alerta id inválido', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/alertas.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "alertas.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Medición en el límite",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Medición en el límite', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.alerta).to.eql(false);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/esp32/medicion.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "medicion.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"api_key\": \"{{s3_api_key}}\",\n  \"temperatura\": 30,\n  \"humedad\": 75\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Sin alertas en igualdad",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Sin alertas en igualdad', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.alertas).to.have.lengthOf(0);",
+                  "    pm.expect(json.total).to.eql(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/alertas.php?dispositivo_id={{s3_dispositivo_id}}&atendida=0&limite=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "alertas.php"
+              ],
+              "query": [
+                {
+                  "key": "dispositivo_id",
+                  "value": "{{s3_dispositivo_id}}"
+                },
+                {
+                  "key": "atendida",
+                  "value": "0"
+                },
+                {
+                  "key": "limite",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Temperatura alta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Temperatura alta', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.alerta).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/esp32/medicion.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "medicion.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"api_key\": \"{{s3_api_key}}\",\n  \"temperatura\": 31,\n  \"humedad\": 75\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Humedad alta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Humedad alta', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.alerta).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/esp32/medicion.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "medicion.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"api_key\": \"{{s3_api_key}}\",\n  \"temperatura\": 30,\n  \"humedad\": 76\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Repetir ambas alertas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Repetir ambas alertas', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.alerta).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/esp32/medicion.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "medicion.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"api_key\": \"{{s3_api_key}}\",\n  \"temperatura\": 31,\n  \"humedad\": 76\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Sin duplicados abiertos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Sin duplicados abiertos', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.alertas).to.have.lengthOf(2);",
+                  "    pm.expect(json.alertas.map(a => a.tipo).sort()).to.eql(['humedad', 'temperatura']);",
+                  "    pm.expect(json.alertas.every(a => a.atendida === false)).to.eql(true);",
+                  "    pm.collectionVariables.set('s3_alerta_id', String(json.alertas.find(a => a.tipo === 'temperatura').id));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/alertas.php?dispositivo_id={{s3_dispositivo_id}}&atendida=0&limite=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "alertas.php"
+              ],
+              "query": [
+                {
+                  "key": "dispositivo_id",
+                  "value": "{{s3_dispositivo_id}}"
+                },
+                {
+                  "key": "atendida",
+                  "value": "0"
+                },
+                {
+                  "key": "limite",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Atender alerta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Atender alerta', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.atendida).to.eql(true);",
+                  "    pm.expect(json.id).to.eql(Number(pm.collectionVariables.get('s3_alerta_id')));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/alertas.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "alertas.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": {{s3_alerta_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Atender alerta otra vez",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Atender alerta otra vez', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.atendida).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/alertas.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "alertas.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": {{s3_alerta_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Filtrar atendidas y limit",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Filtrar atendidas y limit', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.alertas).to.have.lengthOf(1);",
+                  "    pm.expect(json.alertas[0].atendida).to.eql(true);",
+                  "    pm.expect(json.alertas[0].id).to.eql(Number(pm.collectionVariables.get('s3_alerta_id')));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/alertas.php?dispositivo_id={{s3_dispositivo_id}}&atendida=1&limit=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "alertas.php"
+              ],
+              "query": [
+                {
+                  "key": "dispositivo_id",
+                  "value": "{{s3_dispositivo_id}}"
+                },
+                {
+                  "key": "atendida",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Renovar alerta atendida",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Renovar alerta atendida', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.alerta).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/esp32/medicion.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "medicion.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"api_key\": \"{{s3_api_key}}\",\n  \"temperatura\": 31,\n  \"humedad\": 75\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Nueva alerta abierta tras atender",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Nueva alerta abierta tras atender', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.alertas).to.have.lengthOf(2);",
+                  "    pm.expect(json.alertas.find(a => a.tipo === 'temperatura').id).not.to.eql(Number(pm.collectionVariables.get('s3_alerta_id')));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/alertas.php?dispositivo_id={{s3_dispositivo_id}}&atendida=0&limite=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "alertas.php"
+              ],
+              "query": [
+                {
+                  "key": "dispositivo_id",
+                  "value": "{{s3_dispositivo_id}}"
+                },
+                {
+                  "key": "atendida",
+                  "value": "0"
+                },
+                {
+                  "key": "limite",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Entrada persona 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Entrada persona 1', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.tipo).to.eql('entrada');",
+                  "    pm.expect(json.dentro).to.eql(1);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/esp32/acceso.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "acceso.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"api_key\": \"{{s3_api_key}}\",\n  \"uid\": \"{{s3_uid_1}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Rechazar entrada llena",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Rechazar entrada llena', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.error).to.eql('aforo_lleno');",
+                  "    pm.expect(json.dentro).to.eql(1);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/esp32/acceso.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "acceso.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"api_key\": \"{{s3_api_key}}\",\n  \"uid\": \"{{s3_uid_2}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Repetir rechazo lleno",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Repetir rechazo lleno', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.error).to.eql('aforo_lleno');",
+                  "    pm.expect(json.dentro).to.eql(1);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/esp32/acceso.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "acceso.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"api_key\": \"{{s3_api_key}}\",\n  \"uid\": \"{{s3_uid_2}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Una sola alerta de aforo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Una sola alerta de aforo', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.alertas.filter(a => a.tipo === 'aforo')).to.have.lengthOf(1);",
+                  "    pm.expect(json.alertas.find(a => a.tipo === 'aforo').valor).to.eql(1);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/alertas.php?dispositivo_id={{s3_dispositivo_id}}&atendida=0&limite=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "alertas.php"
+              ],
+              "query": [
+                {
+                  "key": "dispositivo_id",
+                  "value": "{{s3_dispositivo_id}}"
+                },
+                {
+                  "key": "atendida",
+                  "value": "0"
+                },
+                {
+                  "key": "limite",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Salida permitida con aforo lleno",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Salida permitida con aforo lleno', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.tipo).to.eql('salida');",
+                  "    pm.expect(json.dentro).to.eql(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/esp32/acceso.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "acceso.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"api_key\": \"{{s3_api_key}}\",\n  \"uid\": \"{{s3_uid_1}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Entrada rechazada no dejó registro",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Entrada rechazada no dejó registro', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.tipo).to.eql('entrada');",
+                  "    pm.expect(json.dentro).to.eql(1);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/esp32/acceso.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "acceso.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"api_key\": \"{{s3_api_key}}\",\n  \"uid\": \"{{s3_uid_2}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Salida persona 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Salida persona 2', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.tipo).to.eql('salida');",
+                  "    pm.expect(json.dentro).to.eql(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/esp32/acceso.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "acceso.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"api_key\": \"{{s3_api_key}}\",\n  \"uid\": \"{{s3_uid_2}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "S3 Comandos",
+      "description": "Ejecutar en orden con token válido en Collection Runner o Newman. Localiza el dispositivo seed demo-esp32-key-0001 y vacía su cola antes de encolar abrir_acceso. El vaciado marca los comandos previos como ejecutados. Conserva dispositivo y comando en variables s3_comandos_dispositivo_id y s3_comando_id.",
+      "item": [
+        {
+          "name": "S3 Identificar dispositivo seed para comandos",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.unset('s3_comandos_dispositivo_id');",
+                  "pm.collectionVariables.unset('s3_comandos_api_key');",
+                  "pm.collectionVariables.unset('s3_comando_id');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Identificar dispositivo seed para comandos', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.dispositivos).to.be.an('array');",
+                  "    const dispositivo = json.dispositivos.find(d => d.api_key === 'demo-esp32-key-0001');",
+                  "    pm.expect(dispositivo, 'Dispositivo seed activo requerido').to.be.an('object');",
+                  "    pm.expect(dispositivo.activo).to.eql(true);",
+                  "    pm.expect(dispositivo.id).to.be.a('number').and.be.above(0);",
+                  "    pm.collectionVariables.set('s3_comandos_dispositivo_id', String(dispositivo.id));",
+                  "    pm.collectionVariables.set('s3_comandos_api_key', dispositivo.api_key);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/dispositivos.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "dispositivos.php"
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Comando sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Comando sin token', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/comando.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "comando.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivo_id\": {{s3_comandos_dispositivo_id}},\n  \"accion\": \"abrir_acceso\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Rechazar acción de comando inválida",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Rechazar acción de comando inválida', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/comando.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "comando.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivo_id\": {{s3_comandos_dispositivo_id}},\n  \"accion\": \"accion_invalida\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Comando con api_key inválida",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Comando con api_key inválida', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/esp32/comando.php?api_key=clave-invalida",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "comando.php"
+              ],
+              "query": [
+                {
+                  "key": "api_key",
+                  "value": "clave-invalida"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Vaciar comandos pendientes del seed",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Vaciar comandos pendientes del seed', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json).to.have.property('comando');",
+                  "    if (json.comando !== null) {",
+                  "        pm.expect(json.comando.dispositivo_id).to.eql(Number(pm.collectionVariables.get('s3_comandos_dispositivo_id')));",
+                  "        pm.expect(json.comando.estado).to.eql('ejecutado');",
+                  "        pm.expect(json.comando.fecha_ejecucion).to.be.a('string').and.not.be.empty;",
+                  "    }",
+                  "});",
+                  "// Collection Runner y Newman repiten esta petición hasta vaciar la cola.",
+                  "if (pm.response.code !== 200 || json.success !== true || !Object.prototype.hasOwnProperty.call(json, 'comando')) {",
+                  "    pm.execution.setNextRequest(null);",
+                  "} else if (json.comando !== null) {",
+                  "    pm.execution.setNextRequest(pm.info.requestId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/esp32/comando.php?api_key={{s3_comandos_api_key}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "comando.php"
+              ],
+              "query": [
+                {
+                  "key": "api_key",
+                  "value": "{{s3_comandos_api_key}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Encolar abrir_acceso pendiente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Encolar abrir_acceso pendiente', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.comando.id).to.be.a('number').and.be.above(0);",
+                  "    pm.expect(json.comando.dispositivo_id).to.eql(Number(pm.collectionVariables.get('s3_comandos_dispositivo_id')));",
+                  "    pm.expect(json.comando.accion).to.eql('abrir_acceso');",
+                  "    pm.expect(json.comando.estado).to.eql('pendiente');",
+                  "    pm.expect(json.comando.fecha_creacion).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.comando.fecha_ejecucion).to.eql(null);",
+                  "    pm.collectionVariables.set('s3_comando_id', String(json.comando.id));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/comando.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "comando.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivo_id\": {{s3_comandos_dispositivo_id}},\n  \"accion\": \"abrir_acceso\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Entregar comando como ejecutado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Entregar comando como ejecutado', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.comando.id).to.be.a('number').and.be.above(0);",
+                  "    pm.expect(json.comando.dispositivo_id).to.eql(Number(pm.collectionVariables.get('s3_comandos_dispositivo_id')));",
+                  "    pm.expect(json.comando.accion).to.eql('abrir_acceso');",
+                  "    pm.expect(json.comando.id).to.eql(Number(pm.collectionVariables.get('s3_comando_id')));",
+                  "    pm.expect(json.comando.estado).to.eql('ejecutado');",
+                  "    pm.expect(json.comando.fecha_creacion).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.comando.fecha_ejecucion).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/esp32/comando.php?api_key={{s3_comandos_api_key}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "comando.php"
+              ],
+              "query": [
+                {
+                  "key": "api_key",
+                  "value": "{{s3_comandos_api_key}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Segunda consulta sin comando pendiente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Segunda consulta sin comando pendiente', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json).to.have.property('comando', null);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/esp32/comando.php?api_key={{s3_comandos_api_key}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "comando.php"
+              ],
+              "query": [
+                {
+                  "key": "api_key",
+                  "value": "{{s3_comandos_api_key}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Listar comando ejecutado por dispositivo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Listar comando ejecutado por dispositivo', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.comandos).to.be.an('array').and.not.be.empty;",
+                  "    pm.expect(json.total).to.eql(json.comandos.length);",
+                  "    pm.expect(json.comandos.every(c => c.dispositivo_id === Number(pm.collectionVariables.get('s3_comandos_dispositivo_id')))).to.eql(true);",
+                  "    const comando = json.comandos.find(c => c.id === Number(pm.collectionVariables.get('s3_comando_id')));",
+                  "    pm.expect(comando, 'Comando encolado presente en el historial').to.be.an('object');",
+                  "    pm.expect(comando.accion).to.eql('abrir_acceso');",
+                  "    pm.expect(comando.estado).to.eql('ejecutado');",
+                  "    pm.expect(comando.fecha_ejecucion).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/comando.php?dispositivo_id={{s3_comandos_dispositivo_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "comando.php"
+              ],
+              "query": [
+                {
+                  "key": "dispositivo_id",
+                  "value": "{{s3_comandos_dispositivo_id}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "S3 Encolar activar_alarma pendiente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Encolar activar_alarma pendiente', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.comando.id).to.be.a('number').and.be.above(0);",
+                  "    pm.expect(json.comando.dispositivo_id).to.eql(Number(pm.collectionVariables.get('s3_comandos_dispositivo_id')));",
+                  "    pm.expect(json.comando.accion).to.eql('activar_alarma');",
+                  "    pm.expect(json.comando.estado).to.eql('pendiente');",
+                  "    pm.expect(json.comando.fecha_creacion).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.comando.fecha_ejecucion).to.eql(null);",
+                  "    pm.collectionVariables.set('s3_comando_id', String(json.comando.id));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/comando.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "comando.php"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivo_id\": {{s3_comandos_dispositivo_id}},\n  \"accion\": \"activar_alarma\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "S3 Entregar activar_alarma como ejecutado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('S3 Entregar activar_alarma como ejecutado', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.comando.id).to.be.a('number').and.be.above(0);",
+                  "    pm.expect(json.comando.dispositivo_id).to.eql(Number(pm.collectionVariables.get('s3_comandos_dispositivo_id')));",
+                  "    pm.expect(json.comando.accion).to.eql('activar_alarma');",
+                  "    pm.expect(json.comando.id).to.eql(Number(pm.collectionVariables.get('s3_comando_id')));",
+                  "    pm.expect(json.comando.estado).to.eql('ejecutado');",
+                  "    pm.expect(json.comando.fecha_creacion).to.be.a('string').and.not.be.empty;",
+                  "    pm.expect(json.comando.fecha_ejecucion).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/esp32/comando.php?api_key={{s3_comandos_api_key}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "esp32",
+                "comando.php"
+              ],
+              "query": [
+                {
+                  "key": "api_key",
+                  "value": "{{s3_comandos_api_key}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Exportar",
+      "item": [
+        {
+          "name": "Exportar accesos CSV",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Cabecera Content-Type contiene text/csv', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/csv');",
+                  "});",
+                  "",
+                  "pm.test('Cuerpo inicia con BOM o contiene cabecera fecha', function () {",
+                  "    const text = pm.response.text();",
+                  "    const startsWithBom = text.charCodeAt(0) === 0xFEFF || text.startsWith('\\uFEFF') || text.startsWith('\\xEF\\xBB\\xBF');",
+                  "    const containsFecha = /fecha/i.test(text);",
+                  "    pm.expect(startsWithBom || containsFecha).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/exportar.php?tipo=accesos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "exportar.php"
+              ],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "accesos"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Exportar mediciones CSV",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Cabecera Content-Type contiene text/csv', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/csv');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/exportar.php?tipo=mediciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "exportar.php"
+              ],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "mediciones"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Exportar tipo inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Rechaza tipo inválido con success false', function () {",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/exportar.php?tipo=invalido",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "exportar.php"
+              ],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "invalido"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Exportar sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Rechaza petición sin X-Token', function () {",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/app/exportar.php?tipo=accesos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "exportar.php"
+              ],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "accesos"
+                }
               ]
             }
           }

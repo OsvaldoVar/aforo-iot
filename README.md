@@ -1,6 +1,6 @@
 # Aforo IoT
 
-Sistema IoT de control de acceso con RFID y monitoreo de temperatura y humedad. Un ESP32 con lector RC522, sensor DHT22, LED verde, LED rojo y buzzer envía datos por HTTP (JSON) a una API REST en PHP con MySQL. Una app Android (Java, Volley, Material Design 3) muestra cuántas personas hay dentro, la temperatura y la humedad, el historial y las alertas, y permite acciones de control. Regla: la primera lectura de una tarjeta es entrada y la siguiente es salida; si se alcanza el aforo máximo, la entrada se niega (LED rojo).
+Sistema IoT de control de acceso con RFID y monitoreo de temperatura y humedad. Un ESP32 con lector RC522, sensor DHT11 (compatible con DHT22), LED verde, LED rojo y buzzer envía datos por HTTP (JSON) a una API REST en PHP con MySQL. Una app Android (Java, Volley, Material Design 3) muestra cuántas personas hay dentro, la temperatura y la humedad, el historial y las alertas, y permite acciones de control. Regla: la primera lectura de una tarjeta es entrada y la siguiente es salida; si se alcanza el aforo máximo, la entrada se niega (LED rojo).
 
 ## Componentes
 
@@ -47,11 +47,11 @@ URLs base de la API:
 
 ### Firmware
 
-Se completará en el Sprint 2.
+Configuración de red WiFi (2.4 GHz) y URL del servidor en `firmware/esp32_aforo/config.h`. Compilación y carga en placa ESP32 Dev Module mediante Arduino IDE 2 o `arduino-cli`. Guía paso a paso, librerías y tabla de conexiones en [docs/instalacion.md](docs/instalacion.md#3-firmware-esp32).
 
 ### App
 
-Se completará en el Sprint 2.
+Configuración de la URL de la API en `android/local.properties`, compilación con Gradle (`./gradlew assembleDebug`) e instalación en dispositivo Android en la misma red WiFi. La URL también se puede cambiar desde la app (Login → **Configurar servidor**, o Más → **Servidor**) sin recompilar. Guía detallada en [docs/instalacion.md](docs/instalacion.md#4-aplicación-android).
 
 ## Flujo de trabajo
 
@@ -72,6 +72,7 @@ Se completará en el Sprint 2.
 
 ## Documentación
 
+- [docs/instalacion.md](docs/instalacion.md) — Manual de instalación y puesta en marcha paso a paso
 - [CONTRIBUTING.md](CONTRIBUTING.md) — Flujo de ramas, commits y PR
 - [docs/ESTANDARES.md](docs/ESTANDARES.md) — Reglas de código por área
 - [docs/ESTETICA.md](docs/ESTETICA.md) — Guía visual Material 3 y señalización de hardware

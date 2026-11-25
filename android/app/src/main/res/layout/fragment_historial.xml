@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="?attr/colorSurface"
+  android:orientation="vertical">
+
+  <com.google.android.material.tabs.TabLayout
+    android:id="@+id/tabsHistorial"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/colorSurface"
+    app:tabGravity="fill"
+    app:tabIndicatorColor="?attr/colorPrimary"
+    app:tabMode="fixed"
+    app:tabSelectedTextColor="?attr/colorPrimary"
+    app:tabTextColor="?attr/colorOnSurfaceVariant">
+
+    <com.google.android.material.tabs.TabItem
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/tab_accesos" />
+
+    <com.google.android.material.tabs.TabItem
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/tab_mediciones" />
+  </com.google.android.material.tabs.TabLayout>
+
+  <com.google.android.material.button.MaterialButton
+    android:id="@+id/btnRango"
+    style="@style/Widget.Material3.Button.OutlinedButton"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="16dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginEnd="16dp"
+    android:text="@string/todo_el_historial"
+    app:icon="@drawable/ic_calendar"
+    app:iconTint="?attr/colorPrimary" />
+
+  <com.google.android.material.button.MaterialButton
+    android:id="@+id/btnExportar"
+    style="@style/Widget.Material3.Button.OutlinedButton"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="16dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginEnd="16dp"
+    android:text="@string/exportar_csv"
+    app:icon="@drawable/ic_download"
+    app:iconTint="?attr/colorPrimary" />
+
+  <FrameLayout
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1">
+
+    <androidx.recyclerview.widget.RecyclerView
+      android:id="@+id/rvHistorial"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:clipToPadding="false"
+      android:padding="8dp" />
+
+    <LinearLayout
+      android:id="@+id/layoutVacio"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:gravity="center"
+      android:orientation="vertical"
+      android:padding="24dp"
+      android:visibility="gone">
+
+      <ImageView
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:importantForAccessibility="no"
+        android:src="@drawable/ic_historial"
+        app:tint="?attr/colorOnSurfaceVariant" />
+
+      <TextView
+        android:id="@+id/txtVacioHistorial"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="@string/sin_registros"
+        android:textAppearance="?attr/textAppearanceBodyMedium"
+        android:textColor="?attr/colorOnSurfaceVariant" />
+
+    </LinearLayout>
+  </FrameLayout>
+</LinearLayout>

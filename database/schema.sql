@@ -27,6 +27,7 @@ CREATE TABLE usuarios (
     password_hash VARCHAR(255) NOT NULL,
     token VARCHAR(128) NULL DEFAULT NULL,
     rol ENUM('admin', 'usuario') NOT NULL DEFAULT 'usuario',
+    fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     UNIQUE KEY uq_usuarios_correo (correo),
     INDEX idx_usuarios_token (token)
@@ -147,7 +148,7 @@ CREATE TABLE alertas (
 CREATE TABLE comandos (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     dispositivo_id INT UNSIGNED NOT NULL,
-    accion ENUM('abrir_acceso', 'alarma') NOT NULL,
+    accion ENUM('abrir_acceso', 'alarma', 'activar_alarma') NOT NULL,
     estado ENUM('pendiente', 'ejecutado') NOT NULL DEFAULT 'pendiente',
     fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fecha_ejecucion DATETIME NULL DEFAULT NULL,

@@ -88,5 +88,23 @@
       android:layout_marginTop="8dp"
       android:text="@string/crear_cuenta" />
 
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/btnServidor"
+      style="@style/Widget.Material3.Button.TextButton"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="4dp"
+      android:text="@string/servidor_cambiar" />
+
+    <TextView
+      android:id="@+id/txtServidor"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="4dp"
+      android:gravity="center"
+      android:textAppearance="?attr/textAppearanceBodySmall"
+      android:textColor="?attr/colorOnSurfaceVariant"
+      android:textIsSelectable="true" />
+
   </LinearLayout>
 </ScrollView>

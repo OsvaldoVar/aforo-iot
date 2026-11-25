@@ -1,9 +1,13 @@
 package com.example.aforoiot;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.appbar.MaterialToolbar;
@@ -33,6 +37,14 @@ public class MainActivity extends AppCompatActivity {
         toolbar = findViewById(R.id.toolbar);
         bottomNav = findViewById(R.id.bottomNav);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
+        }
+        ContextCompat.startForegroundService(this,
+                new Intent(this, AlertService.class));
+
         toolbar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.accionCerrarSesion) {
                 confirmarCierreSesion();
@@ -61,28 +73,22 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        int icono;
+        Fragment pantalla;
         int titulo;
-        int detalle;
-        if (itemId == R.id.navHistorial) {
-            icono = R.drawable.ic_historial;
-            titulo = R.string.menu_historial;
-            detalle = R.string.vacio_historial;
-        } else if (itemId == R.id.navPersonas) {
-            icono = R.drawable.ic_personas;
-            titulo = R.string.menu_personas;
-            detalle = R.string.vacio_personas;
-        } else if (itemId == R.id.navMas) {
-            icono = R.drawable.ic_mas;
-            titulo = R.string.menu_mas;
-            detalle = R.string.vacio_mas;
-        } else {
-            icono = R.drawable.ic_dashboard;
+        if (itemId == R.id.navDashboard) {
+            pantalla = new DashboardFragment();
             titulo = R.string.menu_dashboard;
-            detalle = R.string.vacio_dashboard;
+        } else if (itemId == R.id.navHistorial) {
+            pantalla = new HistorialFragment();
+            titulo = R.string.menu_historial;
+        } else if (itemId == R.id.navMas) {
+            pantalla = new MasFragment();
+            titulo = R.string.menu_mas;
+        } else {
+            pantalla = new PersonasFragment();
+            titulo = R.string.menu_personas;
         }
 
-        Fragment pantalla = PantallaVaciaFragment.newInstance(icono, titulo, detalle);
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.contenedorPantalla, pantalla)
@@ -115,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void cerrarSesion() {
+        stopService(new Intent(this, AlertService.class));
         sesion.cerrarSesion();
         abrirLogin();
     }
