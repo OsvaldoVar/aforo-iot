@@ -1,6 +1,9 @@
 package com.example.aforoiot;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,6 +35,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         toolbar = findViewById(R.id.toolbar);
         bottomNav = findViewById(R.id.bottomNav);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
+        }
+        AlertaMonitor.iniciar(this);
 
         toolbar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.accionCerrarSesion) {
@@ -109,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void cerrarSesion() {
+        AlertaMonitor.detener();
         sesion.cerrarSesion();
         abrirLogin();
     }
