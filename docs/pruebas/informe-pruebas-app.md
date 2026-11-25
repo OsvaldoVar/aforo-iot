@@ -81,5 +81,5 @@ Evidencia: [notificación de alerta](../capturas/s3_notificacion.png).
 
 - Las mediciones del ESP32 se enviaron por HTTP al endpoint `esp32/medicion.php`, no desde el hardware final; la prueba con el sensor DHT11 se hizo por separado en el entorno local del equipo.
 - No se probó con varios usuarios simultáneos ni con 24 horas continuas de datos; las gráficas se validaron con los registros disponibles.
-- La exportación CSV se genera en el teléfono (ver limitación del endpoint en el issue #76).
+- La app exporta en el teléfono los registros visibles (máximo 100). El servidor también ofrece `app/exportar.php` (hasta 10 000 filas), probado en la colección Postman.
 - Si Android detiene el servicio en segundo plano por ahorro de energía, el monitoreo se reanuda al volver a abrir la app.
