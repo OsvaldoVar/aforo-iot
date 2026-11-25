@@ -4,6 +4,10 @@ Este documento describe el cableado físico entre la placa **ESP32 DevKit** y lo
 
 ![Diagrama de conexiones](diagrama-conexiones.svg)
 
+## Circuito simulado en Wokwi
+
+![Circuito simulado en Wokwi con DHT22](diagrama-conexiones.png)
+
 ## Tabla de pines
 
 | Componente | Pin del componente | GPIO del ESP32 | Notas |
