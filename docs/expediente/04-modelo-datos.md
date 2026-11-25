@@ -46,6 +46,7 @@ erDiagram
         varchar_255 password_hash
         varchar_128 token
         enum rol
+        timestamp fecha_registro
     }
 
     personas {
@@ -132,6 +133,7 @@ Almacena las cuentas con privilegios de acceso a la aplicación móvil Android.
 | `password_hash` | `VARCHAR(255)` | `NOT NULL` | Hash de la contraseña generado mediante algoritmo bcrypt (`PASSWORD_BCRYPT`). |
 | `token` | `VARCHAR(128)` | `NULL`, `DEFAULT NULL`, `INDEX (idx_usuarios_token)` | Token de autenticación de sesión activa enviado en encabezado `X-Token`. |
 | `rol` | `ENUM('admin', 'usuario')` | `NOT NULL`, `DEFAULT 'usuario'` | Nivel de privilegios dentro del sistema móvil. |
+| `fecha_registro` | `TIMESTAMP` | `NOT NULL`, `DEFAULT CURRENT_TIMESTAMP` | Fecha y hora en que se registró la cuenta. |
 
 ### 4.3.2 Tabla `personas`
 Catálogo de usuarios físicos autorizados para interactuar con los lectores RFID.

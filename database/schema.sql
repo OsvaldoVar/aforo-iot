@@ -27,6 +27,7 @@ CREATE TABLE usuarios (
     password_hash VARCHAR(255) NOT NULL,
     token VARCHAR(128) NULL DEFAULT NULL,
     rol ENUM('admin', 'usuario') NOT NULL DEFAULT 'usuario',
+    fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     UNIQUE KEY uq_usuarios_correo (correo),
     INDEX idx_usuarios_token (token)
