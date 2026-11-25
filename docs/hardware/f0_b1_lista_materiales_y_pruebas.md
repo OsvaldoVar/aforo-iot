@@ -9,7 +9,7 @@ El [Issue #2](https://github.com/OsvaldoVar/aforo-iot/issues/2) requiere una fot
 | ESP32 | 1 | Placa que controla los componentes. |
 | Lector RC522 | 1 | Módulo para leer las tarjetas RFID. |
 | Tarjetas RFID | 3 | Compatibles con el RC522 e identificadas como A, B y C. |
-| DHT22 | 1 | Sensor de temperatura y humedad. |
+| DHT22 | 1 | Sensor de temperatura y humedad. El módulo entregado en el kit es un DHT11. |
 | LED verde | 1 | Indicador luminoso verde. |
 | LED rojo | 1 | Indicador luminoso rojo. |
 | Resistencias de 220 Ω | 2 | Una para cada LED. |
@@ -17,7 +17,7 @@ El [Issue #2](https://github.com/OsvaldoVar/aforo-iot/issues/2) requiere una fot
 | Protoboard | 1 | Base para montar las pruebas. |
 | Cable USB de datos | 1 | Para conectar el ESP32 a la computadora. |
 | Cables Dupont | 1 juego | Para conectar los componentes. |
-| Resistencia para el DHT22 | 1, si aplica | Se usa si el sensor no la trae integrada. |
+| Resistencia para el sensor DHT | 1, si aplica | Se usa si el sensor no la trae integrada. |
 | Módulo de control para el buzzer | 1, si aplica | Se usa si el buzzer requiere un circuito de control adicional. |
 
 ## Lista de verificación de pruebas
@@ -29,7 +29,7 @@ El [Issue #2](https://github.com/OsvaldoVar/aforo-iot/issues/2) requiere una fot
 | Tarjeta RFID A | Se lee por separado dos veces y se obtiene el mismo identificador. | OK |
 | Tarjeta RFID B | Se obtiene el mismo identificador en dos lecturas y es distinto del de A. | OK |
 | Tarjeta RFID C | Se obtiene el mismo identificador en dos lecturas y es distinto de los de A y B. | OK |
-| DHT22 | Entrega lecturas válidas de temperatura y humedad. | Falla: cableado en reparación |
+| DHT11 (sensor del kit) | Entrega lecturas válidas de temperatura y humedad. | OK |
 | LED verde | Enciende y apaga al activarlo por separado. | OK |
 | LED rojo | Enciende y apaga al activarlo por separado. | OK |
 | Buzzer | Suena al activarlo y deja de sonar al desactivarlo. | OK |
@@ -63,10 +63,22 @@ Las tres UID anteriores quedaron en `tarjetas_pendientes` por no estar en el pad
 
 El LED verde se encendió con las UID registradas; el LED rojo y los pitidos, con las desconocidas. El buzzer sonó al activarse y se detuvo al desactivarse.
 
-### DHT22
+### DHT11
 
-**Falla.** El ESP32 no envió ninguna medición a la tabla `mediciones` durante la prueba: el sensor tiene un problema de cableado pendiente de reparación. Hay que revisar DATA en GPIO 4, alimentación a 3.3 V, GND y la resistencia pull-up de 10 kΩ, y repetir la prueba. Por eso el criterio «una medición del ESP32 real aparece en la tabla `mediciones`» todavía no se cumple.
+El módulo instalado es un **DHT11**, aunque el BOM del proyecto indicaba DHT22. Con el driver `DHT11` entrega lecturas válidas y el ESP32 las registra cada 15 s sin bloquear el resto del ciclo:
+
+```sql
+SELECT id, temperatura, humedad, fecha FROM mediciones ORDER BY id DESC LIMIT 3;
+```
+
+| id | temperatura | humedad | fecha |
+| --- | --- | --- | --- |
+| 16 | 24.50 | 42.00 | 2026-11-25 09:33:10 |
+| 15 | 24.50 | 42.00 | 2026-11-25 09:32:54 |
+| 14 | 24.50 | 42.00 | 2026-11-25 09:32:20 |
+
+Con `DHT22` la librería devolvía `NaN` y no se registraba ninguna medición. El firmware del repositorio todavía declara `DHT dht(DHT_PIN, DHT22)`; debe cambiarse a `DHT11` para este hardware o sustituirse el sensor por un DHT22 real.
 
 ## Estado actual
 
-El ESP32, el lector RC522, los LEDs y el buzzer están verificados. El DHT22 queda pendiente por cableado; cuando se repare se agregará la salida de `SELECT * FROM mediciones ORDER BY id DESC LIMIT 3;` y se actualizará esta tabla.
+El ESP32, el lector RC522, los LEDs, el buzzer y el sensor DHT11 están verificados, y hay mediciones reales del dispositivo en la base de datos. Queda pendiente alinear el firmware del repositorio al DHT11 del kit.
