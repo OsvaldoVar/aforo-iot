@@ -73,10 +73,7 @@ public class MainActivity extends AppCompatActivity {
             pantalla = new MasFragment();
             titulo = R.string.menu_mas;
         } else {
-            pantalla = PantallaVaciaFragment.newInstance(
-                    R.drawable.ic_personas,
-                    R.string.menu_personas,
-                    R.string.vacio_personas);
+            pantalla = new PersonasFragment();
             titulo = R.string.menu_personas;
         }
 

@@ -80,4 +80,28 @@
   <string name="sin_dispositivos">No hay dispositivos registrados</string>
   <string name="api_key_copiada">API key copiada</string>
   <string name="dispositivo_guardado">Dispositivo guardado</string>
+
+  <string name="personas_cargando">Cargando personas y tarjetas pendientes</string>
+  <string name="personas_sin_registros">No hay personas registradas.</string>
+  <string name="persona_registrar">Registrar persona</string>
+  <string name="persona_nueva">Persona nueva</string>
+  <string name="persona_existente">Persona existente</string>
+  <string name="persona_guardar">Guardar</string>
+  <string name="persona_creada">Persona creada</string>
+  <string name="persona_nombre_largo">El nombre debe tener como máximo 100 caracteres</string>
+  <string name="persona_activa">Activa</string>
+  <string name="persona_inactiva">Inactiva</string>
+  <string name="persona_sin_tarjeta">Sin tarjeta</string>
+  <string name="persona_uid">UID %1$s</string>
+  <string name="persona_detalle">%1$s · %2$s</string>
+  <string name="persona_opcion">%1$s · ID %2$d</string>
+  <string name="tarjetas_pendientes">Tarjetas pendientes</string>
+  <string name="tarjetas_sin_pendientes">No hay tarjetas pendientes.</string>
+  <string name="tarjeta_sin_asignar">Tarjeta sin asignar</string>
+  <string name="tarjeta_detalle">UID %1$s · %2$s</string>
+  <string name="tarjeta_asignar">Asignar</string>
+  <string name="tarjeta_asignar_descripcion">Asignar tarjeta %1$s</string>
+  <string name="tarjeta_confirmar">¿Asignar la tarjeta %1$s a %2$s?</string>
+  <string name="tarjeta_reemplazar">¿Asignar la tarjeta %1$s a %2$s? Reemplazará su tarjeta actual (%3$s).</string>
+  <string name="tarjeta_asignada">Tarjeta asignada</string>
 </resources>

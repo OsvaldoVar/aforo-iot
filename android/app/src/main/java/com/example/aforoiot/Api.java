@@ -26,12 +26,22 @@ public final class Api {
 
     public static void get(Context contexto, String ruta,
             Response.Listener<JSONObject> alResponder, Response.ErrorListener alFallar) {
-        solicitud(contexto, Request.Method.GET, ruta, null, alResponder, alFallar);
+        solicitud(contexto, Request.Method.GET, ruta, null, 1, true, alResponder, alFallar);
     }
 
     public static void post(Context contexto, String ruta, JSONObject cuerpo,
             Response.Listener<JSONObject> alResponder, Response.ErrorListener alFallar) {
-        solicitud(contexto, Request.Method.POST, ruta, cuerpo, alResponder, alFallar);
+        solicitud(contexto, Request.Method.POST, ruta, cuerpo, 1, true, alResponder, alFallar);
+    }
+
+    public static Request<JSONObject> getSinCache(Context contexto, String ruta,
+            Response.Listener<JSONObject> alResponder, Response.ErrorListener alFallar) {
+        return solicitud(contexto, Request.Method.GET, ruta, null, 1, false, alResponder, alFallar);
+    }
+
+    public static void postSinReintento(Context contexto, String ruta, JSONObject cuerpo,
+            Response.Listener<JSONObject> alResponder, Response.ErrorListener alFallar) {
+        solicitud(contexto, Request.Method.POST, ruta, cuerpo, 0, false, alResponder, alFallar);
     }
 
     public static boolean esNoAutorizado(VolleyError error) {
@@ -57,7 +67,8 @@ public final class Api {
         return contexto.getString(R.string.error_conexion);
     }
 
-    private static void solicitud(Context contexto, int metodo, String ruta, JSONObject cuerpo,
+    private static Request<JSONObject> solicitud(Context contexto, int metodo, String ruta,
+            JSONObject cuerpo, int reintentos, boolean usarCache,
             Response.Listener<JSONObject> alResponder, Response.ErrorListener alFallar) {
         Context aplicacion = contexto.getApplicationContext();
         JsonObjectRequest solicitud = new JsonObjectRequest(
@@ -72,8 +83,9 @@ public final class Api {
                 return encabezados;
             }
         };
-        solicitud.setRetryPolicy(new DefaultRetryPolicy(10000, 1, 1f));
-        cola(aplicacion).add(solicitud);
+        solicitud.setRetryPolicy(new DefaultRetryPolicy(10000, reintentos, 1f));
+        solicitud.setShouldCache(usarCache);
+        return cola(aplicacion).add(solicitud);
     }
 
     private static synchronized RequestQueue cola(Context contexto) {
