@@ -32,6 +32,15 @@
       android:windowSoftInputMode="adjustResize" />
 
     <activity
+      android:name=".AlertasActivity"
+      android:exported="false" />
+
+    <activity
+      android:name=".LimitesActivity"
+      android:exported="false"
+      android:windowSoftInputMode="adjustResize" />
+
+    <activity
       android:name=".MainActivity"
       android:exported="false" />
   </application>

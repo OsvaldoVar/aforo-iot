@@ -24,5 +24,9 @@ public class MasFragment extends Fragment {
         super.onViewCreated(vista, savedInstanceState);
         vista.findViewById(R.id.cardDispositivos).setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), DispositivosActivity.class)));
+        vista.findViewById(R.id.cardAlertas).setOnClickListener(v ->
+                startActivity(new Intent(requireContext(), AlertasActivity.class)));
+        vista.findViewById(R.id.cardLimites).setOnClickListener(v ->
+                startActivity(new Intent(requireContext(), LimitesActivity.class)));
     }
 }
