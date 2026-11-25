@@ -1,16 +1,72 @@
-# S1-B4 · Mediciones del ESP32 por WiFi
+# Firmware del ESP32 · Aforo IoT
 
-1. Con el ESP32 apagado, conecta el DHT11 del kit (o un DHT22, con `#define DHT_TIPO DHT22` en `config.h`) a 3.3 V y GND y lleva DATA a GPIO 4. Si el sensor carece de resistencia integrada, conecta una de 10 kΩ entre DATA y 3.3 V.
-2. En Arduino IDE, instala el soporte para ESP32, **ArduinoJson 7**, **DHT sensor library** y **Adafruit Unified Sensor**. WiFi y HTTPClient vienen con el soporte para ESP32.
-3. Copia `config.example.h` a `config.h`. Configura la red de 2.4 GHz y usa la clave de prueba indicada en el Issue. En `SERVER`, indica la dirección de la computadora que ejecuta el backend, con el puerto 8080 y el sufijo `/api_aforo/`. El ESP32 debe poder alcanzar esa computadora desde la misma red. Mantén `config.h` local. [Issue #12](https://github.com/OsvaldoVar/aforo-iot/issues/12)
-4. Carga `esp32_aforo.ino` y abre el monitor serie a **115200 baudios**. En condiciones normales, el firmware intenta registrar una medición cada 15 segundos y confirma el registro cuando recibe HTTP 200 y `success: true`. Si no hay WiFi o la lectura es inválida, omite ese envío y continúa en el siguiente intervalo.
+Nodo IoT del proyecto: lee tarjetas RFID, enciende LEDs y buzzer, mide temperatura y humedad, atiende comandos remotos y reporta las alertas a la API.
 
-Para la prueba de integración, comprueba que aparezca una fila en `mediciones` después del mensaje de confirmación. Las pruebas con el equipo físico corresponden al [Issue #31](https://github.com/OsvaldoVar/aforo-iot/issues/31).
+## Qué incluye
 
-## Reconexión y recuperación
+- Lectura del RC522 con UID en hexadecimal mayúsculas y antirrebote de 3 s por UID (#43).
+- Medición del sensor DHT cada 15 s, sin bloquear la lectura de tarjetas (#44).
+- Señalización local con LED verde, LED rojo y buzzer, sin `delay()` en `loop()` (#45).
+- Consulta de comandos cada 3 s: `abrir_acceso` y `activar_alarma`/`alarma` (#78).
+- LED rojo y pitidos cuando la API responde `aforo_lleno` o la medición trae `alerta: true` (#79).
+- Cola FIFO y tarea FreeRTOS de red: el sondeo RFID no se bloquea con las peticiones HTTP.
+- Reconexión de WiFi cada 10 s y pausa de 30 s tras fallos temporales de la API.
 
-- Si se pierde el WiFi, el ESP32 intenta reconectarse cada 10 segundos. Reanuda el envío cuando vuelve la conexión y llega el siguiente intervalo de medición.
-- Ante un error de red, HTTP 408, 429 o 5xx, o una respuesta HTTP 200 con JSON inválido, espera al menos 30 segundos. En el siguiente intervalo disponible envía una lectura nueva. El POST anterior pudo haberse guardado, por eso el firmware no lo reenvía.
-- HTTP 400 indica datos rechazados y HTTP 401 indica que debe revisarse `API_KEY`. Se registran en el monitor serie y no activan la pausa por fallos temporales.
+## Conexiones
 
-Para validar la recuperación, observa el monitor serie a 115200 baudios. Con el ESP32 encendido, apaga y enciende el router de prueba y comprueba que se reconecte sin reiniciar. Después, con WiFi disponible, detén y vuelve a iniciar la API. Verifica que los intentos se espacien durante la interrupción, que se reanuden las confirmaciones HTTP 200 y que la tabla `mediciones` reciba nuevas filas al recuperarse el servicio.
+| Componente | Pines del ESP32 |
+| --- | --- |
+| RC522 | SDA/SS 5, SCK 18, MISO 19, RST 22, MOSI 23; 3.3 V y GND |
+| DHT11 | DATA 4; 3.3 V y GND; pull-up de 10 kΩ si el módulo no lo trae |
+| LED verde | GPIO 25 con resistencia de 220 Ω |
+| LED rojo | GPIO 26 con resistencia de 220 Ω |
+| Buzzer | GPIO 27 y GND |
+
+El detalle completo está en [docs/instalacion.md](../../docs/instalacion.md#3-firmware-esp32).
+
+## Configuración
+
+1. Copia la plantilla:
+   ```bash
+   cp firmware/esp32_aforo/config.example.h firmware/esp32_aforo/config.h
+   ```
+2. Edita `config.h` con tu red de 2.4 GHz, la URL de la API (con `/api_aforo/` al final) y la `API_KEY` del dispositivo.
+3. El kit trae un **DHT11**; el firmware lo usa por defecto. Si reemplazas el sensor por un DHT22, agrega `#define DHT_TIPO DHT22` en `config.h`.
+
+`config.h` está en `.gitignore`: no se sube al repositorio.
+
+## Compilar y cargar
+
+Con Arduino IDE 2: abre `esp32_aforo.ino`, placa **ESP32 Dev Module**, instala **MFRC522**, **DHT sensor library**, **Adafruit Unified Sensor** y **ArduinoJson 7**, y sube el sketch.
+
+Con `arduino-cli`:
+
+```bash
+arduino-cli compile --fqbn esp32:esp32:esp32 firmware/esp32_aforo
+arduino-cli upload -p /dev/ttyUSB0 --fqbn esp32:esp32:esp32 firmware/esp32_aforo
+arduino-cli monitor -p /dev/ttyUSB0 -c baudrate=115200
+```
+
+## Comportamiento
+
+| Evento | LED | Buzzer |
+| --- | --- | --- |
+| Entrada o salida registrada | Verde 2 s | Silencio |
+| Tarjeta desconocida, `aforo_lleno`, alerta o error HTTP/red | Rojo 2 s | 2 pulsos de 100 ms |
+| Comando `abrir_acceso` | Verde 3 s | Silencio |
+| Comando `activar_alarma` o `alarma` | Rojo 3 s | Continuo 3 s |
+
+Mensajes esperados en el monitor serie:
+
+```
+WiFi conectado.
+Acceso: entrada registrada.
+Acceso: denegado por aforo lleno.
+Medicion registrada: 24.5 C, 42.0 % (HTTP 200)
+Comando: abrir acceso.
+Comando: activar alarma.
+```
+
+## Pruebas
+
+El firmware se validó con el hardware real en las pruebas de [hardware](../../docs/pruebas/pruebas-hardware.md) y de [#31](https://github.com/OsvaldoVar/aforo-iot/issues/31): 20 lecturas consecutivas, antirrebote, tarjeta desconocida, aforo lleno, API caída, sensor desconectado, apertura remota y alarma.
