@@ -1,6 +1,6 @@
 # Aforo IoT
 
-Sistema IoT de control de acceso con RFID y monitoreo de temperatura y humedad. Un ESP32 con lector RC522, sensor DHT22, LED verde, LED rojo y buzzer envía datos por HTTP (JSON) a una API REST en PHP con MySQL. Una app Android (Java, Volley, Material Design 3) muestra cuántas personas hay dentro, la temperatura y la humedad, el historial y las alertas, y permite acciones de control. Regla: la primera lectura de una tarjeta es entrada y la siguiente es salida; si se alcanza el aforo máximo, la entrada se niega (LED rojo).
+Sistema IoT de control de acceso con RFID y monitoreo de temperatura y humedad. Un ESP32 con lector RC522, sensor DHT11 (compatible con DHT22), LED verde, LED rojo y buzzer envía datos por HTTP (JSON) a una API REST en PHP con MySQL. Una app Android (Java, Volley, Material Design 3) muestra cuántas personas hay dentro, la temperatura y la humedad, el historial y las alertas, y permite acciones de control. Regla: la primera lectura de una tarjeta es entrada y la siguiente es salida; si se alcanza el aforo máximo, la entrada se niega (LED rojo).
 
 ## Componentes
 

@@ -4,7 +4,12 @@
 #define DHT_PIN 4
 #define INTERVALO_LECTURA_MS 2000UL
 
-DHT dht(DHT_PIN, DHT22);
+// El kit del proyecto trae un DHT11. Para usar un DHT22, cambia DHT_TIPO a DHT22.
+#ifndef DHT_TIPO
+#define DHT_TIPO DHT11
+#endif
+
+DHT dht(DHT_PIN, DHT_TIPO);
 unsigned long ultimaLectura = 0;
 
 void setup() {
@@ -24,7 +29,7 @@ void loop() {
     const float humedad = dht.readHumidity();
 
     if (isnan(temperatura) || isnan(humedad)) {
-        Serial.println("Lectura invalida del DHT22. Se reintentara en 2 segundos.");
+        Serial.println("Lectura invalida del sensor DHT. Se reintentara en 2 segundos.");
         return;
     }
 
