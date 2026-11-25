@@ -191,6 +191,32 @@
       </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="12dp"
+      android:orientation="horizontal">
+
+      <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAbrirAcceso"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/abrir_acceso" />
+
+      <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnActivarAlarma"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_weight="1"
+        android:text="@string/activar_alarma"
+        app:strokeColor="?attr/colorError"
+        android:textColor="?attr/colorError" />
+
+    </LinearLayout>
+
     <TextView
       android:id="@+id/txtActualizado"
       android:layout_width="wrap_content"
