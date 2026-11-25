@@ -16,7 +16,7 @@
 | 7 | Manual de instalación, configuración y ejecución | A (OsvaldoVar) | Sprint 3 | `README.md` | Pendiente |
 | 8 | Manual de usuario con capturas | C (OscarJDA) | Sprint 3 | [manual-usuario.md](../manual-usuario.md) | Disponible |
 | 9 | Reporte de pruebas: API (A), hardware (B), app (C) | Todos | Sprint 3 | [informe-pruebas-app.md](../pruebas/informe-pruebas-app.md) | Disponible |
-| 10 | Conclusiones, limitaciones, trabajo futuro y referencias | Todos | Sprint 3 | - | Pendiente |
+| 10 | Conclusiones, limitaciones, trabajo futuro y referencias | Todos | Sprint 3 | [10-conclusiones.md](./10-conclusiones.md) | Pendiente de revisión |
 
 ## Convenciones de documentación
 
