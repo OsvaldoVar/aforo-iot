@@ -32,6 +32,8 @@ Al abrir la app se muestra el formulario de acceso. Escribe el correo y la contr
 
 Si las credenciales son incorrectas, la app muestra el mensaje de error del servidor sin cerrar el formulario.
 
+Si cambió la IP de la computadora, pulsa **Configurar servidor** antes de entrar y escribe la URL base, por ejemplo `http://192.168.0.102:8080/api_aforo/`. La app agrega `http://`, la barra final y `/api_aforo/` si faltan. También se puede cambiar después en **Más → Servidor**; la URL queda guardada en el teléfono.
+
 ![Pantalla de inicio de sesión](capturas/login_inicial.png)
 
 La sesión se conserva al cerrar la app: al volver a abrirla se entra directo al Dashboard.
@@ -98,6 +100,10 @@ Desde **Más → Dispositivos** se administran los ESP32: alta, edición, activa
 - Barras con las entradas por hora.
 
 ![Pantalla de gráficas](capturas/s3_graficas.png)
+
+## Servidor
+
+En **Más → Servidor** se puede cambiar la URL de la API sin recompilar la app, por ejemplo cuando la laptop recibe otra IP por DHCP. Acepta una IP o una URL completa; si falta `http://`, la barra final o `/api_aforo/`, la app los agrega. El cambio se guarda en el teléfono y se aplica a las peticiones siguientes.
 
 ## Notificaciones
 

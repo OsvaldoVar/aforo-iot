@@ -72,7 +72,7 @@ public final class Api {
             Response.Listener<JSONObject> alResponder, Response.ErrorListener alFallar) {
         Context aplicacion = contexto.getApplicationContext();
         JsonObjectRequest solicitud = new JsonObjectRequest(
-                metodo, Config.BASE_URL + ruta, cuerpo, alResponder, alFallar) {
+                metodo, Config.baseUrl(aplicacion) + ruta, cuerpo, alResponder, alFallar) {
             @Override
             public Map<String, String> getHeaders() {
                 Map<String, String> encabezados = new HashMap<>();

@@ -191,6 +191,8 @@ Conecta los componentes al ESP32 con la placa desconectada de la alimentación:
    > aforo.baseUrl=http://10.0.2.2:8080/api_aforo/
    > ```
 
+   > **Cambiar la URL sin recompilar:** desde la pantalla de login con **Configurar servidor**, o en **Más → Servidor** ya con sesión. La URL se guarda en la app y tiene prioridad sobre `local.properties`.
+
 ### Compilación
 
 Compila la versión debug mediante Gradle desde la terminal:

@@ -2,6 +2,7 @@ package com.example.aforoiot;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -22,6 +23,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextInputEditText etContrasena;
     private MaterialButton btnLogin;
     private MaterialButton btnIrRegistro;
+    private TextView txtServidor;
     private SessionManager sesion;
 
     private final ActivityResultLauncher<Intent> registroLauncher =
@@ -49,10 +51,18 @@ public class LoginActivity extends AppCompatActivity {
         etContrasena = findViewById(R.id.etContrasena);
         btnLogin = findViewById(R.id.btnLogin);
         btnIrRegistro = findViewById(R.id.btnIrRegistro);
+        txtServidor = findViewById(R.id.txtServidor);
 
         btnLogin.setOnClickListener(v -> iniciarSesion());
         btnIrRegistro.setOnClickListener(v ->
                 registroLauncher.launch(new Intent(this, RegistroActivity.class)));
+
+        txtServidor.setText(getString(R.string.servidor_actual, Config.baseUrl(this)));
+        findViewById(R.id.btnServidor).setOnClickListener(v ->
+                DialogoServidor.mostrar(this, () -> {
+                    txtServidor.setText(getString(R.string.servidor_actual, Config.baseUrl(this)));
+                    mostrarMensaje(getString(R.string.servidor_guardado));
+                }));
     }
 
     private void iniciarSesion() {

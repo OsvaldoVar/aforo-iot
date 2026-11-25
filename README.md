@@ -51,7 +51,7 @@ Configuración de red WiFi (2.4 GHz) y URL del servidor en `firmware/esp32_aforo
 
 ### App
 
-Configuración de la URL de la API en `android/local.properties`, compilación con Gradle (`./gradlew assembleDebug`) e instalación en dispositivo Android en la misma red WiFi. Guía detallada en [docs/instalacion.md](docs/instalacion.md#4-aplicación-android).
+Configuración de la URL de la API en `android/local.properties`, compilación con Gradle (`./gradlew assembleDebug`) e instalación en dispositivo Android en la misma red WiFi. La URL también se puede cambiar desde la app (Login → **Configurar servidor**, o Más → **Servidor**) sin recompilar. Guía detallada en [docs/instalacion.md](docs/instalacion.md#4-aplicación-android).
 
 ## Flujo de trabajo
 
