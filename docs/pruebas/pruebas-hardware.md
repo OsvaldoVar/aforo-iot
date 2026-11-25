@@ -14,11 +14,13 @@ Pruebas del [Issue #81](https://github.com/OsvaldoVar/aforo-iot/issues/81), real
 | 2 | Antirrebote | Deja la tarjeta encima del lector 10 s | 1 solo registro | Un solo registro (id 39, Sofía entrada 10:23:48) con la tarjeta sostenida 10 s | Pasa |
 | 3 | Tarjeta desconocida | Pasa una tarjeta sin registrar | LED rojo + pitidos; aparece en Personas → pendientes | UID `12121212`, `19281038` y `9749A07F` en `tarjetas_pendientes`; LED rojo y pitidos | Pasa |
 | 4 | Aforo lleno | `aforo_max = 2`, 3 personas entran | La tercera ve LED rojo y no se registra | Ana entró (id 40, 10:51:00) y quedaron 2 dentro; Carlos fue rechazado sin registro, con alerta de aforo (id 2, 10:51:10) y notificación en la app | Pasa |
-| 5 | Corte de WiFi | Apaga el router o el hotspot 30 s y vuelve a encenderlo | El ESP32 se reconecta solo en menos de 20 s | No ejecutada: reiniciar el router cambia la IP de la laptop y rompería la URL configurada en la app y el ESP32 | No ejecutada |
+| 5 | Corte de WiFi | Apaga el router o el hotspot 30 s y vuelve a encenderlo | El ESP32 se reconecta solo en menos de 20 s | No ejecutada: reiniciar el router cambia la IP de la laptop y rompería la URL configurada en la app y el ESP32. Justificación aceptada por @OsvaldoVar | Justificada |
 | 6 | API caída | Detén `php -S` 30 s y vuelve a iniciarlo | El ESP32 reintenta y vuelve a enviar mediciones | API detenida 10:52:17–10:52:47; las mediciones se reanudaron solas a las 10:53:05 y siguieron cada 15 s | Pasa |
 | 7 | DHT desconectado | Desconecta el cable DATA del sensor | El monitor serie avisa del error; las tarjetas siguen funcionando | El monitor mostró `Lectura invalida del sensor DHT` y el acceso de Ana se registró (id 41, 10:55:56); al reconectar volvió la medición | Pasa |
 | 8 | Abrir acceso | Botón en la app | LED verde en menos de 4 s | Comando id 4 creado y ejecutado a las 10:20:52 (0 s); el firmware enciende el LED verde 3 s | Pasa |
 | 9 | Activar alarma | Botón en la app | Buzzer en menos de 4 s | Comando id 5 creado 10:20:57 y ejecutado 10:20:59 (2 s); el buzzer sonó | Pasa |
+
+**Estado:** 8 de 9 pruebas ejecutadas y aprobadas; la prueba 5 queda **justificada** por el riesgo de perder la IP del servidor y la justificación fue aceptada en #107.
 
 ## Registros
 
@@ -63,7 +65,7 @@ La app mostró la notificación de aforo lleno.
 
 ### 5. Corte de WiFi
 
-No ejecutada. Reiniciar el router cambia la IP asignada a la laptop y con ella la URL configurada en el ESP32 y en la app, lo que rompería el entorno de la demo. Queda pendiente repetirla después de la entrega con una IP fija o una reserva DHCP, o desactivando únicamente la radio de 2.4 GHz desde el panel del router.
+No ejecutada. Reiniciar el router cambia la IP asignada a la laptop y con ella la URL configurada en el ESP32 y en la app, lo que rompería el entorno de la demo. La justificación fue aceptada por @OsvaldoVar en #107. Queda pendiente repetirla después de la entrega con una IP fija o una reserva DHCP, o desactivando únicamente la radio de 2.4 GHz desde el panel del router.
 
 ### 6. API caída
 
