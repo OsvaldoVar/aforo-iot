@@ -129,7 +129,7 @@ Conecta los componentes al ESP32 con la placa desconectada de la alimentación:
 | --- | --- | --- |
 | **Alimentación protoboard** | 3.3 V, GND | Riel de 3.3 V y riel de tierra común (GND). |
 | **Lector RC522 (RFID)** | GPIO 5, 18, 19, 22, 23 | GPIO 5 → SDA/SS, GPIO 18 → SCK, GPIO 19 → MISO, GPIO 22 → RST, GPIO 23 → MOSI. Alimentar a 3.3 V y GND. |
-| **Sensor DHT22** | GPIO 4 | Pin DATA a GPIO 4. Alimentar a 3.3 V y GND. Conectar resistencia pull-up de 10 kΩ entre DATA y 3.3 V si el módulo no la incluye integrada. |
+| **Sensor DHT11** (o DHT22) | GPIO 4 | El kit trae DHT11; para un DHT22 agrega `#define DHT_TIPO DHT22` en `config.h`. Pin DATA a GPIO 4. Alimentar a 3.3 V y GND. Conectar resistencia pull-up de 10 kΩ entre DATA y 3.3 V si el módulo no la incluye integrada. |
 | **LED verde (Acceso)** | GPIO 25 | Ánodo a GPIO 25 mediante resistencia de 220 Ω; cátodo a GND. |
 | **LED rojo (Denegado/Lleno)** | GPIO 26 | Ánodo a GPIO 26 mediante resistencia de 220 Ω; cátodo a GND. |
 | **Buzzer** | GPIO 27 | Terminal positivo a GPIO 27; terminal negativo a GND. |

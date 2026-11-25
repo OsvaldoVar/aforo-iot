@@ -11,11 +11,11 @@
 | 3 | Arquitectura del sistema y diagrama de despliegue | A (OsvaldoVar) | Sprint 1 | [03-arquitectura.md](./03-arquitectura.md) | Disponible |
 | 4 | Modelo de datos (diagrama entidad-relación y diccionario de datos) | A (OsvaldoVar) | Sprint 2 | [04-modelo-datos.md](./04-modelo-datos.md) | Listo |
 | 4 | Diagrama de conexiones del hardware | B (salazar5678-web) | Sprint 1 | `docs/hardware/` | Pendiente |
-| 5 | Modelo de datos (diagrama ER en S2) y documentación de endpoints (`docs/api.md`, cierre en S3) | A (OsvaldoVar) | Sprint 2–3 | `docs/api.md` | Pendiente |
+| 5 | Modelo de datos (diagrama ER en S2) y documentación de endpoints (`docs/api.md`, cierre en S3) | A (OsvaldoVar) | Sprint 2–3 | [api.md](../api.md) | Disponible |
 | 6 | Protocolo y flujo de comunicación IoT, diagrama de secuencia | B (salazar5678-web) | Sprint 3 | — | Pendiente |
-| 7 | Manual de instalación, configuración y ejecución | A (OsvaldoVar) | Sprint 3 | `README.md` | Pendiente |
+| 7 | Manual de instalación, configuración y ejecución | A (OsvaldoVar) | Sprint 3 | [instalacion.md](../instalacion.md) y [README.md](../../README.md) | Disponible |
 | 8 | Manual de usuario con capturas | C (OscarJDA) | Sprint 3 | [manual-usuario.md](../manual-usuario.md) | Disponible |
-| 9 | Reporte de pruebas: API (A), hardware (B), app (C) | Todos | Sprint 3 | [informe-pruebas-app.md](../pruebas/informe-pruebas-app.md) | Disponible |
+| 9 | Reporte de pruebas: API (A), hardware (B), app (C) | Todos | Sprint 3 | [informe-pruebas-api.md](../pruebas/informe-pruebas-api.md) (API, A), [informe-pruebas-app.md](../pruebas/informe-pruebas-app.md) (app, C); `docs/pruebas/pruebas-hardware.md` (hardware, en curso en #81) | En curso |
 | 10 | Conclusiones, limitaciones, trabajo futuro y referencias | Todos | Sprint 3 | [10-conclusiones.md](./10-conclusiones.md) | Pendiente de revisión |
 
 ## Convenciones de documentación

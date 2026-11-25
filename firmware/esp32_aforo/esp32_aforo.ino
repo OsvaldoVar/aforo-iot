@@ -11,7 +11,12 @@
 #define INTERVALO_REINTENTO_API 30000UL
 #define TIEMPO_ESPERA_HTTP_MS 3000
 
-DHT dht(DHT_PIN, DHT22);
+// El kit del proyecto trae un DHT11. Para usar un DHT22, define DHT_TIPO DHT22 en config.h.
+#ifndef DHT_TIPO
+#define DHT_TIPO DHT11
+#endif
+
+DHT dht(DHT_PIN, DHT_TIPO);
 unsigned long ultimaMedicion = 0;
 unsigned long ultimoIntentoWifi = 0;
 bool wifiConectado = false;
@@ -38,7 +43,7 @@ bool enviarMedicion() {
     const float temperatura = dht.readTemperature();
     const float humedad = dht.readHumidity();
     if (!isfinite(temperatura) || !isfinite(humedad)) {
-        Serial.println("Lectura invalida del DHT22. Medicion omitida.");
+        Serial.println("Lectura invalida del sensor DHT. Medicion omitida.");
         return false;
     }
 
