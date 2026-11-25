@@ -58,6 +58,8 @@ La pestaña **Historial** tiene dos vistas:
 
 El botón **Todo el historial** abre un selector para limitar el rango de fechas. El botón **Exportar CSV** genera un archivo `historial.csv` con los datos de la pestaña activa y abre la hoja de compartir del teléfono para enviarlo por correo, mensajería o guardarlo en el almacenamiento.
 
+La exportación incluye los registros visibles en pantalla (máximo 100). Para rangos más grandes, acota las fechas.
+
 ![Historial con el botón Exportar CSV](capturas/s3_historial.png)
 
 ![Hoja de compartir con el archivo generado](capturas/s3_exportar.png)

@@ -250,6 +250,7 @@ public class HistorialFragment extends Fragment {
             File archivo = new File(requireContext().getCacheDir(), "historial.csv");
             try (OutputStreamWriter escritor = new OutputStreamWriter(
                     new FileOutputStream(archivo), StandardCharsets.UTF_8)) {
+                escritor.write('\uFEFF');
                 escritor.write(csv.toString());
             }
 
@@ -266,7 +267,11 @@ public class HistorialFragment extends Fragment {
     }
 
     private String csv(String valor) {
-        return "\"" + (valor == null ? "" : valor.replace("\"", "\"\"")) + "\"";
+        String texto = valor == null ? "" : valor;
+        if (!texto.isEmpty() && "=+-@\t\r".indexOf(texto.charAt(0)) >= 0) {
+            texto = "'" + texto;
+        }
+        return "\"" + texto.replace("\"", "\"\"") + "\"";
     }
 
     private void manejarError(VolleyError error) {
