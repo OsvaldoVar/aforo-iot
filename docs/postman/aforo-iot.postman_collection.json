@@ -4179,6 +4179,202 @@
           }
         }
       ]
+    },
+    {
+      "name": "Exportar",
+      "item": [
+        {
+          "name": "Exportar accesos CSV",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Cabecera Content-Type contiene text/csv', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/csv');",
+                  "});",
+                  "",
+                  "pm.test('Cuerpo inicia con BOM o contiene cabecera fecha', function () {",
+                  "    const text = pm.response.text();",
+                  "    const startsWithBom = text.charCodeAt(0) === 0xFEFF || text.startsWith('\\uFEFF') || text.startsWith('\\xEF\\xBB\\xBF');",
+                  "    const containsFecha = /fecha/i.test(text);",
+                  "    pm.expect(startsWithBom || containsFecha).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/exportar.php?tipo=accesos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "exportar.php"
+              ],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "accesos"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Exportar mediciones CSV",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Cabecera Content-Type contiene text/csv', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/csv');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/exportar.php?tipo=mediciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "exportar.php"
+              ],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "mediciones"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Exportar tipo inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Rechaza tipo inválido con success false', function () {",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/app/exportar.php?tipo=invalido",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "exportar.php"
+              ],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "invalido"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Exportar sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código de estado 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Rechaza petición sin X-Token', function () {",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.mensaje).to.be.a('string').and.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/app/exportar.php?tipo=accesos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "exportar.php"
+              ],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "accesos"
+                }
+              ]
+            }
+          }
+        }
+      ]
     }
   ]
 }
