@@ -2,6 +2,8 @@
 
 Esta guía explica cómo cargar el circuito de [diagram.json](diagram.json) y el firmware de [`firmware/esp32_aforo/`](../../firmware/esp32_aforo/) en el simulador en línea **Wokwi** para probar el comportamiento local del ESP32 sin hardware físico.
 
+[Proyecto Aforo IoT en Wokwi](https://wokwi.com/projects/481686965909601281)
+
 ## Nota sobre el sensor DHT en Wokwi
 
 El archivo [diagram.json](diagram.json) define las 22 conexiones del circuito y utiliza la pieza `wokwi-dht22`, ya que Wokwi no cuenta con un componente DHT11.
@@ -50,6 +52,15 @@ El simulador en la nube de Wokwi no puede alcanzar el servidor PHP local (`php -
 - **LEDs y buzzer:** ante una lectura sin respuesta válida del servidor, el firmware activa el LED rojo durante 2 s junto con dos pitidos de 100 ms en el buzzer, confirmando el cableado y la señalización no bloqueante.
 - **Lecturas del sensor DHT:** al variar los deslizadores de temperatura y humedad en `wokwi-dht22`, el firmware lee valores válidos cada 15 s (sin reportar lecturas `NaN` ni bloquear el lector RFID).
 - **Menú de configuración por serie:** escribir `m` y Enter en el monitor serie permite recorrer las opciones de configuración almacenadas en NVS.
+
+## Pruebas del Issue #100
+
+| Prueba | Estado |
+| --- | --- |
+| Conexión a `Wokwi-GUEST` e intento de envío de mediciones cada 15 s | Pendiente |
+| Lectura del UID y activación del LED rojo y el buzzer ante un fallo de comunicación | Pendiente |
+| Antirrebote al volver a presentar la misma tarjeta antes de 3 s | Pendiente |
+| Lectura del nuevo valor al cambiar la temperatura del DHT22 simulado | Pendiente |
 
 ## Referencias
 
