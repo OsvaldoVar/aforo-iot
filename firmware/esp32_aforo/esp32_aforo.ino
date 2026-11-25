@@ -1,14 +1,15 @@
 // Firmware del nodo ESP32 de Aforo IoT.
 //
-// Integra la lectura RFID con antirrebote (#43), las mediciones periodicas
-// (#44), la senalizacion con LEDs y buzzer (#45), la consulta de comandos
-// remotos (#78) y las alertas de aforo lleno y de medicion (#79).
-// La red y el servidor se configuran en config.h.
+// Integra lectura RFID con antirrebote (#43), mediciones (#44), LEDs y buzzer
+// (#45), comandos remotos (#78) y alertas (#79). La red y el servidor salen de
+// config.h por defecto y se pueden cambiar por el monitor serie (se guardan en
+// NVS), sin reflashear.
 
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <DHT.h>
+#include <Preferences.h>
 #include <SPI.h>
 #include <MFRC522.h>
 #include <freertos/FreeRTOS.h>
@@ -17,6 +18,7 @@
 #include <math.h>
 #include <string.h>
 
+#include "ip_valida.h"
 #include "config.h"
 
 // ---------- pines ----------
@@ -26,14 +28,13 @@
 #define MISO_PIN 19
 #define MOSI_PIN 23
 #define DHT_PIN 4
-#define LED_VERDE 25
-#define LED_ROJO 26
-#define BUZZER 27
-
-// El kit del proyecto trae un DHT11. Para un DHT22, define DHT_TIPO DHT22 en config.h.
+// El kit trae un DHT11. Para un DHT22, define DHT_TIPO DHT22 en config.h.
 #ifndef DHT_TIPO
 #define DHT_TIPO DHT11
 #endif
+#define LED_VERDE 25
+#define LED_ROJO 26
+#define BUZZER 27
 
 // ---------- tiempos ----------
 #define ANTIRREBOTE_RFID_MS 3000UL
@@ -54,6 +55,9 @@
 #define CAPACIDAD_SENALES 4
 #define PILA_TAREA_IO_BYTES 8192
 #define TAMANO_UID_HEX 21
+#define MAX_REDES 30
+#define ESPERA_ENTRADA_MS 60000
+#define PUERTO_POR_DEFECTO 8080
 
 #define AVISO_COLA_ACCESO 1U
 #define AVISO_COLA_MEDICION 2U
@@ -73,19 +77,31 @@ struct Trabajo {
     unsigned long instante;
 };
 
+Preferences prefs;
 DHT dht(DHT_PIN, DHT_TIPO);
 MFRC522 lector(SS_PIN, RST_PIN);
 LecturaReciente lecturasRecientes[CAPACIDAD_LECTURAS_RECIENTES] = {};
+String redes[MAX_REDES];
 
 QueueHandle_t colaTrabajos = nullptr;
 QueueHandle_t colaSenales = nullptr;
 TaskHandle_t tareaIo = nullptr;
+
+// Solo se tocan desde la tarea de red (o desde loop con la tarea pausada).
+String red;
+String clave;
+String url;
+String apiKey;
 
 unsigned long ultimaMedicion = 0;
 unsigned long ultimoIntentoWifi = 0;
 unsigned long ultimoFalloApi = 0;
 bool wifiConectado = false;
 bool apiEnPausa = false;
+
+// Pausa de la tarea de red mientras el menu toca WiFi y configuracion.
+volatile bool ioPausada = false;
+volatile bool ioEnPausa = false;
 
 // Indicador LED/buzzer, solo en loop().
 unsigned long inicioIndicador = 0;
@@ -94,8 +110,210 @@ Senal senalActual = SENAL_PERMITIDO;
 bool indicadorActivo = false;
 bool buzzerActivo = false;
 
-String urlApi(const char* ruta) {
-    return String(SERVER) + ruta;
+// ---------- almacenamiento ----------
+
+void cargarConfig() {
+    prefs.begin("aforo", true);
+    red = prefs.getString("red", WIFI_SSID);
+    clave = prefs.getString("clave", WIFI_PASS);
+    url = prefs.getString("url", SERVER);
+    apiKey = prefs.getString("api_key", API_KEY);
+    prefs.end();
+}
+
+void guardarConfig() {
+    prefs.begin("aforo", false);
+    prefs.putString("red", red);
+    prefs.putString("clave", clave);
+    prefs.putString("url", url);
+    prefs.putString("api_key", apiKey);
+    prefs.end();
+}
+
+void borrarConfig() {
+    prefs.begin("aforo", false);
+    prefs.clear();
+    prefs.end();
+    red = WIFI_SSID;
+    clave = WIFI_PASS;
+    url = SERVER;
+    apiKey = API_KEY;
+    Serial.println("Configuracion restaurada desde config.h.");
+}
+
+bool configCompleta() {
+    return red.length() > 0 && url.length() > 0;
+}
+
+String urlBase() {
+    return url.endsWith("/") ? url : url + "/";
+}
+
+String oculto(const String& valor) {
+    return valor.length() > 0 ? String("********") : String("(vacia)");
+}
+
+// ---------- entrada por monitor serie ----------
+
+bool entradaExpirada = false;
+
+String leerLinea(const char* aviso) {
+    Serial.print(aviso);
+    entradaExpirada = false;
+    String linea;
+    const unsigned long inicio = millis();
+    while (millis() - inicio < ESPERA_ENTRADA_MS) {
+        while (Serial.available() > 0) {
+            const char caracter = static_cast<char>(Serial.read());
+            if (caracter == '\n') {
+                linea.trim();
+                Serial.println();
+                return linea;
+            }
+            linea += caracter;
+        }
+        delay(5);  // cede el CPU; readStringUntil puede bloquear el WDT
+    }
+    linea.trim();
+    Serial.println();
+    entradaExpirada = true;
+    return linea;
+}
+
+int leerEntero(const char* aviso, int minimo, int maximo) {
+    for (;;) {
+        const String texto = leerLinea(aviso);
+        const long valor = texto.toInt();
+        if (texto.length() > 0 && valor >= minimo && valor <= maximo) {
+            return static_cast<int>(valor);
+        }
+        Serial.printf("Escribe un numero entre %d y %d.\n", minimo, maximo);
+    }
+}
+
+// ---------- menu ----------
+
+int escanearRedes() {
+    Serial.println("Escaneando redes 2.4 GHz...");
+    WiFi.mode(WIFI_STA);
+    WiFi.disconnect();
+    const int total = WiFi.scanNetworks();
+    if (total <= 0) {
+        Serial.println("No se encontro ninguna red. Acerca el ESP32 al router.");
+        WiFi.scanDelete();
+        return 0;
+    }
+    const int limite = total < MAX_REDES ? total : MAX_REDES;
+    for (int i = 0; i < limite; ++i) {
+        redes[i] = WiFi.SSID(i);
+        Serial.printf("%2d) %-30s %4d dBm  %s\n", i + 1, redes[i].c_str(), WiFi.RSSI(i),
+                      WiFi.encryptionType(i) == WIFI_AUTH_OPEN ? "abierta" : "protegida");
+    }
+    WiFi.scanDelete();
+    return limite;
+}
+
+void configurarRed() {
+    const int total = escanearRedes();
+    if (total == 0) {
+        return;
+    }
+    const int elegida = leerEntero("Numero de red (0 cancela): ", 0, total);
+    if (elegida == 0) {
+        return;
+    }
+    red = redes[elegida - 1];
+    Serial.printf("Red elegida: %s\n", red.c_str());
+    const String nuevaClave = leerLinea("Contrasena (Enter si la red es abierta): ");
+    if (entradaExpirada) {
+        // Sin respuesta no se borra la contrasena que ya funcionaba.
+        Serial.println("Sin respuesta: se conserva la contrasena anterior.");
+    } else {
+        clave = nuevaClave;
+    }
+    guardarConfig();
+    Serial.println("Red guardada en la memoria del ESP32.");
+}
+
+void configurarServidor() {
+    for (;;) {
+        const String ip = leerLinea("IP de la computadora (ej. 192.168.1.10): ");
+        if (!ipValida(ip.c_str())) {
+            Serial.println("IP invalida. Usa el formato 192.168.1.10.");
+            continue;
+        }
+        const String textoPuerto = leerLinea("Puerto (Enter para 8080): ");
+        const long puerto = textoPuerto.length() == 0 ? PUERTO_POR_DEFECTO : textoPuerto.toInt();
+        if (puerto < 1 || puerto > 65535) {
+            Serial.println("Puerto invalido. Usa un numero entre 1 y 65535.");
+            return;
+        }
+        url = "http://" + ip + ":" + String(puerto) + "/api_aforo/";
+        guardarConfig();
+        Serial.printf("Servidor: %s\n", url.c_str());
+        return;
+    }
+}
+
+void configurarApiKey() {
+    const String texto = leerLinea("API key del dispositivo (Enter deja la actual): ");
+    if (texto.length() > 0) {
+        apiKey = texto;
+        guardarConfig();
+        Serial.println("API key actualizada.");
+    }
+}
+
+void verConfig() {
+    Serial.printf("Red      : %s\n", red.length() > 0 ? red.c_str() : "(sin definir)");
+    Serial.printf("Contrasena: %s\n", oculto(clave).c_str());
+    Serial.printf("Servidor : %s\n", url.length() > 0 ? urlBase().c_str() : "(sin definir)");
+    Serial.printf("API key  : %s\n", oculto(apiKey).c_str());
+    Serial.println("La contrasena y la API key se guardan en texto plano en la NVS del ESP32.");
+}
+
+void menuConfiguracion() {
+    for (;;) {
+        Serial.println();
+        Serial.println("=== Configuracion Aforo IoT ===");
+        Serial.printf("Red      : %s\n", red.length() > 0 ? red.c_str() : "(sin definir)");
+        Serial.printf("Servidor : %s\n", url.length() > 0 ? urlBase().c_str() : "(sin definir)");
+        Serial.printf("API key  : %s\n", oculto(apiKey).c_str());
+        Serial.println("1) Escanear y elegir red");
+        Serial.println("2) Cambiar servidor (IP y puerto)");
+        Serial.println("3) Cambiar API key");
+        Serial.println("4) Ver configuracion");
+        Serial.println("5) Restaurar config.h");
+        Serial.println("6) Guardar y conectar");
+        Serial.println("0) Cancelar");
+        const int opcion = leerEntero("Opcion: ", 0, 6);
+
+        switch (opcion) {
+            case 0:
+                cargarConfig();
+                return;
+            case 1:
+                configurarRed();
+                break;
+            case 2:
+                configurarServidor();
+                break;
+            case 3:
+                configurarApiKey();
+                break;
+            case 4:
+                verConfig();
+                break;
+            case 5:
+                borrarConfig();
+                break;
+            case 6:
+                if (configCompleta()) {
+                    return;
+                }
+                break;
+        }
+    }
 }
 
 // ---------- WiFi ----------
@@ -103,16 +321,45 @@ String urlApi(const char* ruta) {
 void iniciarWifi() {
     WiFi.mode(WIFI_STA);
     WiFi.setAutoReconnect(false);
-    WiFi.begin(WIFI_SSID, WIFI_PASS);
+    if (clave.length() == 0) {
+        WiFi.begin(red.c_str());
+    } else {
+        WiFi.begin(red.c_str(), clave.c_str());
+    }
+}
+
+bool conectarWifi(unsigned long esperaMs) {
+    if (!configCompleta()) {
+        return false;
+    }
+    iniciarWifi();
+    Serial.printf("Conectando a \"%s\"", red.c_str());
+    const unsigned long inicio = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - inicio < esperaMs) {
+        Serial.print('.');
+        delay(500);
+    }
+    Serial.println();
+    wifiConectado = WiFi.status() == WL_CONNECTED;
+    if (wifiConectado) {
+        Serial.printf("Conectado. IP del ESP32: %s\n", WiFi.localIP().toString().c_str());
+        Serial.printf("Servidor configurado: %s\n", urlBase().c_str());
+    } else {
+        Serial.println("No se pudo conectar. Revisa la contrasena y que la red sea de 2.4 GHz.");
+    }
+    return wifiConectado;
 }
 
 void actualizarWifi(unsigned long ahora) {
+    if (!configCompleta()) {
+        wifiConectado = false;
+        return;
+    }
     const bool conectado = WiFi.status() == WL_CONNECTED;
     if (conectado != wifiConectado) {
         Serial.println(conectado ? "WiFi conectado." : "Conexion WiFi perdida.");
         wifiConectado = conectado;
     }
-
     if (!conectado && ahora - ultimoIntentoWifi >= INTERVALO_RECONEXION) {
         ultimoIntentoWifi = ahora;
         Serial.println("Reintentando conexion WiFi.");
@@ -267,8 +514,8 @@ void enviarAcceso(const char* uid) {
 
     WiFiClient cliente;
     HTTPClient http;
-    if (!http.begin(cliente, urlApi("esp32/acceso.php"))) {
-        Serial.println("Acceso: no se pudo iniciar la solicitud. Revisa SERVER.");
+    if (!http.begin(cliente, urlBase() + "esp32/acceso.php")) {
+        Serial.println("Acceso: no se pudo iniciar la solicitud. Revisa la IP del servidor.");
         enviarSenal(SENAL_DENEGADO);
         return;
     }
@@ -278,7 +525,7 @@ void enviarAcceso(const char* uid) {
     http.addHeader("Content-Type", "application/json");
 
     JsonDocument acceso;
-    acceso["api_key"] = API_KEY;
+    acceso["api_key"] = apiKey;
     acceso["uid"] = uid;
     String cuerpo;
     serializeJson(acceso, cuerpo);
@@ -299,8 +546,8 @@ bool enviarMedicion() {
 
     WiFiClient cliente;
     HTTPClient http;
-    if (!http.begin(cliente, urlApi("esp32/medicion.php"))) {
-        Serial.println("No se pudo iniciar la solicitud. Revisa SERVER.");
+    if (!http.begin(cliente, urlBase() + "esp32/medicion.php")) {
+        Serial.println("No se pudo iniciar la solicitud. Revisa la IP del servidor.");
         return false;
     }
 
@@ -309,7 +556,7 @@ bool enviarMedicion() {
     http.addHeader("Content-Type", "application/json");
 
     JsonDocument medicion;
-    medicion["api_key"] = API_KEY;
+    medicion["api_key"] = apiKey;
     medicion["temperatura"] = temperatura;
     medicion["humedad"] = humedad;
 
@@ -361,9 +608,9 @@ void consultarComando() {
 
     WiFiClient cliente;
     HTTPClient http;
-    if (!http.begin(cliente, urlApi("esp32/comando.php") + "?api_key=" + API_KEY)) {
+    if (!http.begin(cliente, urlBase() + "esp32/comando.php?api_key=" + apiKey)) {
         if (!errorAvisado) {
-            Serial.println("Comando: URL invalida. Revisa SERVER y API_KEY.");
+            Serial.println("Comando: URL invalida. Revisa la IP y el puerto.");
             errorAvisado = true;
         }
         return;
@@ -392,13 +639,15 @@ void consultarComando() {
         }
     } else if (codigo <= 0) {
         if (!errorAvisado) {
-            Serial.printf("Comando: error de red (%d). Revisa que %s responda.\n", codigo,
-                          String(SERVER).c_str());
+            Serial.printf("Comando: error de red (%d). El ESP32 no alcanza %s\n", codigo,
+                          urlBase().c_str());
+            Serial.printf("  ESP32: %s | revisa servidor encendido, puerto y firewall.\n",
+                          WiFi.localIP().toString().c_str());
             errorAvisado = true;
         }
     } else {
         errorAvisado = false;
-        Serial.printf("Comando: error HTTP %d.\n", codigo);
+        Serial.printf("Comando: error HTTP %d en %s\n", codigo, urlBase().c_str());
     }
 
     http.end();
@@ -511,18 +760,31 @@ void informarAvisos() {
 
 void tareaEntradaSalida(void*) {
     dht.begin();
-    iniciarWifi();
-    Serial.println("Conectando a WiFi.");
-    ultimoIntentoWifi = millis();
+    WiFi.mode(WIFI_STA);
+    WiFi.setAutoReconnect(false);
+    if (configCompleta()) {
+        Serial.println("Conectando a WiFi.");
+        ultimoIntentoWifi = millis();
+        conectarWifi(20000);
+    } else {
+        Serial.println("Sin red configurada. Escribe 'm' y Enter para configurar.");
+    }
 
     for (;;) {
+        if (ioPausada) {
+            ioEnPausa = true;
+            vTaskDelay(pdMS_TO_TICKS(50));
+            continue;
+        }
+        ioEnPausa = false;
         informarAvisos();
 
         const unsigned long ahora = millis();
         actualizarWifi(ahora);
 
         static unsigned long ultimoComando = 0;
-        if (WiFi.status() == WL_CONNECTED && ahora - ultimoComando >= INTERVALO_COMANDO_MS) {
+        if (configCompleta() && WiFi.status() == WL_CONNECTED
+                && ahora - ultimoComando >= INTERVALO_COMANDO_MS) {
             ultimoComando = ahora;
             consultarComando();
         }
@@ -535,6 +797,63 @@ void tareaEntradaSalida(void*) {
                 procesarMedicionProgramada(trabajo.instante);
             }
         }
+    }
+}
+
+// ---------- menu en caliente ----------
+
+void abrirMenu() {
+    apagarSalidas();
+    indicadorActivo = false;
+    ioPausada = true;
+
+    // Espera a que la tarea de red termine el trabajo en curso (maximo ~6 s por HTTP).
+    const unsigned long inicio = millis();
+    while (!ioEnPausa && millis() - inicio < 8000) {
+        delay(10);
+    }
+    if (!ioEnPausa) {
+        Serial.println("La tarea de red sigue ocupada. Intenta de nuevo en unos segundos.");
+        ioPausada = false;
+        ultimaMedicion = millis();
+        return;
+    }
+
+    menuConfiguracion();
+    WiFi.disconnect();
+    if (configCompleta() && !conectarWifi(20000)) {
+        Serial.println("Escribe 'm' y Enter para corregir la red o la IP.");
+    }
+    wifiConectado = WiFi.status() == WL_CONNECTED;
+
+    // Lo leido mientras el menu estaba abierto ya no sirve: no registrar accesos viejos.
+    Senal senalVieja;
+    while (colaSenales != nullptr && xQueueReceive(colaSenales, &senalVieja, 0) == pdTRUE) {
+    }
+    xQueueReset(colaTrabajos);
+
+    ioPausada = false;
+    ultimaMedicion = millis();  // evita una rafaga al salir del menu
+}
+
+void revisarEntradaSerial() {
+    while (Serial.available() > 0) {
+        const int tecla = Serial.read();
+        if (tecla != 'm' && tecla != 'M') {
+            continue;
+        }
+        // Descarta el Enter que acompana a la 'm' para no ensuciar el menu.
+        while (Serial.available() > 0) {
+            const int siguiente = Serial.peek();
+            if (siguiente == '\r' || siguiente == '\n') {
+                Serial.read();
+            } else {
+                break;
+            }
+        }
+        Serial.println("\nAbriendo menu de configuracion...");
+        abrirMenu();
+        return;
     }
 }
 
@@ -552,8 +871,15 @@ void setup() {
     SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN, SS_PIN);
     lector.PCD_Init();
 
+    cargarConfig();
     Serial.println();
     Serial.println("Aforo IoT - ESP32 (RFID, LEDs, comandos y mediciones)");
+    Serial.println("Red y servidor: config.h. Escribe 'm' y Enter para cambiarlos.");
+
+    if (!configCompleta()) {
+        Serial.println("No hay configuracion guardada.");
+        menuConfiguracion();
+    }
 
     colaTrabajos = xQueueCreate(CAPACIDAD_COLA, sizeof(Trabajo));
     colaSenales = xQueueCreate(CAPACIDAD_SENALES, sizeof(Senal));
@@ -581,6 +907,7 @@ void loop() {
         return;
     }
 
+    revisarEntradaSerial();
     const unsigned long ahora = millis();
     revisarSenales(ahora);
     actualizarIndicador(ahora);

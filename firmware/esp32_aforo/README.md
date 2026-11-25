@@ -11,6 +11,7 @@ Nodo IoT del proyecto: lee tarjetas RFID, enciende LEDs y buzzer, mide temperatu
 - LED rojo y pitidos cuando la API responde `aforo_lleno` o la medición trae `alerta: true` (#79).
 - Cola FIFO y tarea FreeRTOS de red: el sondeo RFID no se bloquea con las peticiones HTTP.
 - Reconexión de WiFi cada 10 s y pausa de 30 s tras fallos temporales de la API.
+- Configuración de red, servidor y API key por monitor serie (`m` + Enter), guardada en NVS. `config.h` aporta los valores iniciales.
 
 ## Conexiones
 
@@ -30,10 +31,23 @@ El detalle completo está en [docs/instalacion.md](../../docs/instalacion.md#3-f
    ```bash
    cp firmware/esp32_aforo/config.example.h firmware/esp32_aforo/config.h
    ```
-2. Edita `config.h` con tu red de 2.4 GHz, la URL de la API (con `/api_aforo/` al final) y la `API_KEY` del dispositivo.
+2. Edita `config.h` con tu red de 2.4 GHz, la URL de la API (con `/api_aforo/` al final) y la `API_KEY` del dispositivo. Son los valores por defecto del arranque.
 3. El kit trae un **DHT11**; el firmware lo usa por defecto. Si reemplazas el sensor por un DHT22, agrega `#define DHT_TIPO DHT22` en `config.h`.
 
 `config.h` está en `.gitignore`: no se sube al repositorio.
+
+### Cambiar red o servidor sin reflashear
+
+`config.h` solo aporta los valores iniciales. Con el ESP32 encendido, escribe `m` y Enter en el monitor serie:
+
+1. Escanear y elegir red (pide la contraseña).
+2. Cambiar servidor: pide IP y puerto y arma `http://IP:puerto/api_aforo/`.
+3. Cambiar API key.
+4. Ver configuración.
+5. Restaurar los valores de `config.h`.
+6. Guardar y conectar.
+
+Los cambios quedan en la NVS del ESP32 (namespace `aforo`), en texto plano, y sobreviven a reinicios y reflasheos. La opción `5` los borra y vuelve a `config.h`.
 
 ## Compilar y cargar
 
