@@ -148,7 +148,7 @@ CREATE TABLE alertas (
 CREATE TABLE comandos (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     dispositivo_id INT UNSIGNED NOT NULL,
-    accion ENUM('abrir_acceso', 'alarma') NOT NULL,
+    accion ENUM('abrir_acceso', 'alarma', 'activar_alarma') NOT NULL,
     estado ENUM('pendiente', 'ejecutado') NOT NULL DEFAULT 'pendiente',
     fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fecha_ejecucion DATETIME NULL DEFAULT NULL,
