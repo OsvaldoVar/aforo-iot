@@ -53,6 +53,7 @@ public class AlertService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        startForeground(1, notificacionServicio());
         return START_STICKY;
     }
 
@@ -118,11 +119,9 @@ public class AlertService extends Service {
 
                     if (!inicializado) {
                         inicializado = true;
-                        if (alerta != null) {
-                            preferencias.edit()
-                                    .putInt(ULTIMA_ALERTA, alerta.optInt("id", 0))
-                                    .apply();
-                        }
+                        preferencias.edit()
+                                .putInt(ULTIMA_ALERTA, alerta != null ? alerta.optInt("id", 0) : 0)
+                                .apply();
                         return;
                     }
                     if (alerta == null) {
@@ -171,7 +170,7 @@ public class AlertService extends Service {
 
         try {
             NotificationManagerCompat.from(this)
-                    .notify(alerta.optInt("id", 2), constructor.build());
+                    .notify(1000 + alerta.optInt("id", 0), constructor.build());
         } catch (SecurityException ignorada) {
             // Sin permiso de notificaciones: se ignora.
         }
