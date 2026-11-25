@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aforo IoT — Presentación</title>
+  <style>
+    :root {
+      /* Paleta Material 3 tomada de docs/ESTETICA.md */
+      --primary: #00639B;
+      --on-primary: #FFFFFF;
+      --primary-container: #CEE5FF;
+      --on-primary-container: #001D33;
+      --secondary: #51606F;
+      --secondary-container: #D5E4F7;
+      --on-secondary-container: #0E1D2A;
+      --tertiary: #68587A;
+      --tertiary-container: #EEDBFF;
+      --on-tertiary-container: #231533;
+      --error: #BA1A1A;
+      --error-container: #FFDAD6;
+      --on-error-container: #410002;
+      --surface: #F7F9FF;
+      --on-surface: #181C20;
+      --surface-container: #ECEEF4;
+      --surface-white: #FFFFFF;
+      --on-surface-variant: #42474E;
+      --outline: #72777F;
+      --outline-soft: #C6CCD4;
+      --status-online-bg: #D7F5DF;
+      --status-online-fg: #0B4F24;
+      --status-warn-bg: #FFE8C2;
+      --status-warn-fg: #4A2E00;
+      --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", Ubuntu, Cantarell, sans-serif;
+      --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    @page {
+      size: 1280px 720px;
+      margin: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-sans);
+      color: var(--on-surface);
+      background: #1C2024;
+      line-height: 1.4;
+    }
+
+    section.slide {
+      width: 1280px;
+      height: 720px;
+      background: var(--surface);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 44px 56px 36px 56px;
+      margin: 24px auto;
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+      page-break-after: always;
+      break-after: page;
+    }
+
+    section.slide:last-child {
+      page-break-after: auto;
+      break-after: auto;
+    }
+
+    @media print {
+      html, body {
+        background: transparent;
+      }
+      section.slide {
+        margin: 0;
+        box-shadow: none;
+      }
+    }
+
+    /* Encabezado y pie consistentes */
+    .slide-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 2px solid var(--primary-container);
+      padding-bottom: 12px;
+      margin-bottom: 22px;
+      flex-shrink: 0;
+    }
+
+    .slide-header h2 {
+      margin: 0;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--on-primary-container);
+      letter-spacing: -0.02em;
+    }
+
+    .slide-subtitle {
+      font-size: 15px;
+      color: var(--on-surface-variant);
+      font-weight: 500;
+    }
+
+    .slide-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .slide-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--on-surface-variant);
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px solid var(--outline-soft);
+      flex-shrink: 0;
+    }
+
+    .slide-num {
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Tarjetas Material 3 */
+    .card {
+      background: var(--surface-container);
+      border-radius: 14px;
+      padding: 18px 20px;
+    }
+
+    .card-white {
+      background: var(--surface-white);
+      border: 1px solid var(--outline-soft);
+      border-radius: 14px;
+      padding: 18px 20px;
+    }
+
+    .card-primary {
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+      border-radius: 14px;
+      padding: 18px 20px;
+    }
+
+    .card h3 {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--on-primary-container);
+    }
+
+    .chip {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .chip-online {
+      background: var(--status-online-bg);
+      color: var(--status-online-fg);
+    }
+
+    .chip-warn {
+      background: var(--status-warn-bg);
+      color: var(--status-warn-fg);
+    }
+
+    .chip-error {
+      background: var(--error-container);
+      color: var(--on-error-container);
+    }
+
+    .chip-primary {
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+    }
+
+    .chip-tertiary {
+      background: var(--tertiary-container);
+      color: var(--on-tertiary-container);
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+      background: rgba(0, 99, 155, 0.08);
+      color: var(--on-primary-container);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    /* ==================== DIAPOSITIVA 1: PORTADA ==================== */
+    section.slide-cover {
+      background: linear-gradient(135deg, #001D33 0%, #003E66 55%, #00639B 100%);
+      color: var(--on-primary);
+      padding: 56px 68px;
+      justify-content: space-between;
+    }
+
+    .cover-accent-bar {
+      width: 84px;
+      height: 6px;
+      background: var(--primary-container);
+      border-radius: 3px;
+      margin-bottom: 24px;
+    }
+
+    .cover-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 16px;
+      color: var(--primary-container);
+      font-weight: 500;
+    }
+
+    .cover-badge {
+      background: rgba(206, 229, 255, 0.16);
+      border: 1px solid rgba(206, 229, 255, 0.35);
+      color: #FFFFFF;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .cover-hero {
+      max-width: 960px;
+    }
+
+    .cover-hero h1 {
+      margin: 0 0 18px 0;
+      font-size: 72px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.04;
+      color: #FFFFFF;
+    }
+
+    .cover-hero p {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.4;
+      color: #DCEEFF;
+      font-weight: 400;
+      max-width: 820px;
+    }
+
+    .cover-bottom {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr;
+      gap: 28px;
+      align-items: end;
+      border-top: 1px solid rgba(206, 229, 255, 0.28);
+      padding-top: 24px;
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .team-card {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(206, 229, 255, 0.22);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+
+    .team-name {
+      font-size: 19px;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 4px;
+    }
+
+    .team-role {
+      font-size: 13.5px;
+      color: #CEE5FF;
+      line-height: 1.35;
+    }
+
+    .cover-meta {
+      text-align: right;
+    }
+
+    .cover-meta .course {
+      font-size: 18px;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 6px;
+    }
+
+    .cover-meta .date {
+      font-size: 15px;
+      color: #CEE5FF;
+    }
+
+    /* ==================== DIAPOSITIVA 2: PROBLEMA Y OBJETIVOS ==================== */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 24px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .clean-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .clean-list li {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      font-size: 15.5px;
+      line-height: 1.42;
+      color: var(--on-surface);
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-top: 7px;
+      flex-shrink: 0;
+    }
+
+    .dot-error { background: var(--error); }
+    .dot-primary { background: var(--primary); }
+
+    .obj-general {
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+      border-left: 5px solid var(--primary);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      font-size: 15.5px;
+      line-height: 1.42;
+    }
+
+    .obj-general strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 16px;
+    }
+
+    /* ==================== DIAPOSITIVA 3: ARQUITECTURA ==================== */
+    .arch-diagram {
+      display: flex;
+      align-items: stretch;
+      justify-content: space-between;
+      gap: 0;
+      margin-top: 8px;
+      margin-bottom: 22px;
+    }
+
+    .arch-node {
+      flex: 1;
+      background: var(--surface-white);
+      border: 2px solid var(--primary);
+      border-radius: 14px;
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .arch-node.node-db {
+      border-color: var(--tertiary);
+    }
+
+    .arch-node.node-app {
+      border-color: var(--secondary);
+    }
+
+    .arch-node-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .arch-node-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--on-primary-container);
+    }
+
+    .arch-node-tag {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+    }
+
+    .node-db .arch-node-tag {
+      background: var(--tertiary-container);
+      color: var(--on-tertiary-container);
+    }
+
+    .node-app .arch-node-tag {
+      background: var(--secondary-container);
+      color: var(--on-secondary-container);
+    }
+
+    .arch-node ul {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 13.8px;
+      color: var(--on-surface-variant);
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .arch-node-foot {
+      margin-top: 12px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--outline-soft);
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .arch-arrow {
+      width: 68px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      padding: 0 4px;
+    }
+
+    .arrow-label {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--on-surface-variant);
+      text-align: center;
+      margin-bottom: 6px;
+      line-height: 1.2;
+    }
+
+    .arrow-line {
+      width: 44px;
+      height: 3px;
+      background: var(--primary);
+      position: relative;
+    }
+
+    .arrow-line::after {
+      content: "";
+      position: absolute;
+      right: -2px;
+      top: -5px;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-left: 10px solid var(--primary);
+    }
+
+    .arrow-line.bi::before {
+      content: "";
+      position: absolute;
+      left: -2px;
+      top: -5px;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-right: 10px solid var(--primary);
+    }
+
+    .arrow-sub {
+      font-size: 11px;
+      color: var(--secondary);
+      text-align: center;
+      margin-top: 6px;
+      font-family: var(--font-mono);
+    }
+
+    .arch-details {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .arch-detail-box {
+      background: var(--surface-container);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+
+    .arch-detail-box h4 {
+      margin: 0 0 6px 0;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--on-primary-container);
+    }
+
+    .arch-detail-box p {
+      margin: 0;
+      font-size: 13.5px;
+      color: var(--on-surface-variant);
+      line-height: 1.4;
+    }
+
+    /* ==================== DIAPOSITIVA 4: HARDWARE ==================== */
+    .hw-layout {
+      display: grid;
+      grid-template-columns: 390px 1fr;
+      gap: 26px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .hw-photo-box {
+      background: var(--surface-container);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .hw-photo-frame {
+      flex: 1;
+      min-height: 0;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #101418;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hw-photo-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .hw-photo-caption {
+      margin-top: 8px;
+      font-size: 12.5px;
+      color: var(--on-surface-variant);
+      text-align: center;
+    }
+
+    table.m3-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.8px;
+      background: var(--surface-white);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--outline-soft);
+    }
+
+    table.m3-table th {
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+      text-align: left;
+      padding: 9px 12px;
+      font-weight: 700;
+      font-size: 13.5px;
+    }
+
+    table.m3-table td {
+      padding: 8px 12px;
+      border-top: 1px solid var(--surface-container);
+      vertical-align: top;
+    }
+
+    table.m3-table tr:nth-child(even) td {
+      background: #FAFBFD;
+    }
+
+    .hw-specs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .hw-spec-item {
+      background: var(--surface-container);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+
+    .hw-spec-item strong {
+      display: block;
+      color: var(--primary);
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    /* ==================== DIAPOSITIVA 5: MODELO DE DATOS ==================== */
+    .db-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .db-table-card {
+      background: var(--surface-white);
+      border: 1px solid var(--outline-soft);
+      border-top: 4px solid var(--primary);
+      border-radius: 10px;
+      padding: 11px 14px;
+    }
+
+    .db-table-card.db-rel {
+      border-top-color: var(--secondary);
+    }
+
+    .db-table-card.db-ops {
+      border-top-color: var(--tertiary);
+    }
+
+    .db-table-name {
+      font-family: var(--font-mono);
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--on-primary-container);
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .db-table-fields {
+      font-size: 12.6px;
+      color: var(--on-surface-variant);
+      line-height: 1.38;
+    }
+
+    .db-view-bar {
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+      border-radius: 12px;
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      font-size: 13.8px;
+    }
+
+    .db-view-bar strong {
+      font-size: 14.5px;
+    }
+
+    /* ==================== DIAPOSITIVA 6: APP ANDROID ==================== */
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .phone-card {
+      background: var(--surface-container);
+      border-radius: 16px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 0;
+    }
+
+    .phone-frame {
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #101418;
+      padding: 4px;
+    }
+
+    .phone-frame img {
+      max-height: 100%;
+      max-width: 100%;
+      width: auto;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 9px;
+      display: block;
+    }
+
+    .phone-title {
+      margin-top: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--on-primary-container);
+    }
+
+    .phone-desc {
+      font-size: 12.5px;
+      color: var(--on-surface-variant);
+      text-align: center;
+      margin-top: 2px;
+    }
+
+    /* ==================== DIAPOSITIVA 7: PRUEBAS ==================== */
+    .tests-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .test-col {
+      background: var(--surface-white);
+      border: 1px solid var(--outline-soft);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .test-metric-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin: 8px 0 12px 0;
+    }
+
+    .test-big {
+      font-size: 40px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    .test-unit {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--on-surface-variant);
+    }
+
+    .test-list {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 13.8px;
+      color: var(--on-surface);
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      line-height: 1.38;
+    }
+
+    .test-note {
+      margin-top: 14px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 12.8px;
+      line-height: 1.35;
+    }
+
+    .test-note.online {
+      background: var(--status-online-bg);
+      color: var(--status-online-fg);
+    }
+
+    .test-note.warn {
+      background: var(--status-warn-bg);
+      color: var(--status-warn-fg);
+    }
+
+    .test-note.info {
+      background: var(--secondary-container);
+      color: var(--on-secondary-container);
+    }
+
+    /* ==================== DIAPOSITIVA 8: CONCLUSIONES ==================== */
+    .conc-grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 22px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .conc-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .conc-box {
+      background: var(--surface-container);
+      border-radius: 14px;
+      padding: 16px 20px;
+      flex: 1;
+    }
+
+    .conc-box.future {
+      background: var(--surface-white);
+      border: 2px solid var(--primary-container);
+    }
+
+    .conc-box h3 {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--on-primary-container);
+    }
+
+    .conc-box ul {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 14px;
+      line-height: 1.42;
+      color: var(--on-surface);
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== DIAPOSITIVA 1: PORTADA ==================== -->
+  <section class="slide slide-cover">
+    <div class="cover-top">
+      <span>Desarrollo de Aplicaciones Móviles</span>
+      <span class="cover-badge">Sistema IoT + App Android</span>
+    </div>
+
+    <div class="cover-hero">
+      <div class="cover-accent-bar"></div>
+      <h1>Aforo IoT</h1>
+      <p>Control de acceso con tarjetas RFID, monitoreo de temperatura y humedad en tiempo real, alertas automáticas y control remoto desde Android.</p>
+    </div>
+
+    <div class="cover-bottom">
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="team-name">Osvaldo</div>
+          <div class="team-role">Base de datos, API REST PHP y administración del repositorio</div>
+        </div>
+        <div class="team-card">
+          <div class="team-name">Diego</div>
+          <div class="team-role">Firmware ESP32, sensores y montaje de hardware</div>
+        </div>
+        <div class="team-card">
+          <div class="team-name">Oscar</div>
+          <div class="team-role">Aplicación Android Material 3 y pruebas de hardware</div>
+        </div>
+      </div>
+
+      <div class="cover-meta">
+        <div class="course">Desarrollo de Aplicaciones Móviles</div>
+        <div class="date">Noviembre 2026</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== DIAPOSITIVA 2: PROBLEMA Y OBJETIVOS ==================== -->
+  <section class="slide">
+    <div class="slide-header">
+      <h2>Problema y objetivos</h2>
+      <span class="slide-subtitle">Justificación operativa y alcance del sistema</span>
+    </div>
+
+    <div class="slide-body">
+      <div class="grid-2">
+        <div class="card">
+          <h3>Planteamiento del problema</h3>
+          <ul class="clean-list">
+            <li>
+              <span class="dot dot-error"></span>
+              <span><strong>Sin visibilidad en tiempo real:</strong> en laboratorios, aulas y locales, el conteo manual impide saber cuántas personas hay dentro y quién entró o salió.</span>
+            </li>
+            <li>
+              <span class="dot dot-error"></span>
+              <span><strong>Incumplimiento de aforo:</strong> sin validación automatizada del límite de ocupación ocurren aglomeraciones que comprometen seguridad y normativa interna.</span>
+            </li>
+            <li>
+              <span class="dot dot-error"></span>
+              <span><strong>Falta de monitoreo ambiental:</strong> alzas de temperatura o humedad pasan inadvertidas sin registro continuo ni alertas oportunas.</span>
+            </li>
+            <li>
+              <span class="dot dot-error"></span>
+              <span><strong>Trazabilidad deficiente:</strong> las bitácoras en papel generan errores y dificultan consultar historiales o exportar reportes.</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="card-white">
+          <div class="obj-general">
+            <strong>Objetivo general</strong>
+            Diseñar, implementar y validar un sistema IoT integral que controle el acceso por RFID, monitoree temperatura y humedad en tiempo real y gestione alertas y comandos remotos desde Android vía API REST.
+          </div>
+
+          <h3>Objetivos específicos</h3>
+          <ul class="clean-list">
+            <li>
+              <span class="dot dot-primary"></span>
+              <span><strong>Nodo ESP32:</strong> lector RC522 (antirrebote 3 s), sensor DHT11 (cada 15 s) y señalización local con LEDs y buzzer sin bloqueos.</span>
+            </li>
+            <li>
+              <span class="dot dot-primary"></span>
+              <span><strong>API REST PHP 8 + MariaDB:</strong> alternancia entrada/salida en servidor, control de <code>aforo_max</code>, alertas automáticas y autenticación separada.</span>
+            </li>
+            <li>
+              <span class="dot dot-primary"></span>
+              <span><strong>App Android Material 3:</strong> Dashboard en vivo (cada 5 s), personas, historial por fechas, gráficas 24 h, notificaciones y exportación CSV.</span>
+            </li>
+            <li>
+              <span class="dot dot-primary"></span>
+              <span><strong>Control remoto y pruebas:</strong> comandos <code>abrir_acceso</code> y <code>alarma</code> en menos de 4 s, validados con pruebas de API, hardware y app.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>Aforo IoT — Desarrollo de Aplicaciones Móviles</span>
+      <span class="slide-num">2 / 8</span>
+    </div>
+  </section>
+
+  <!-- ==================== DIAPOSITIVA 3: ARQUITECTURA ==================== -->
+  <section class="slide">
+    <div class="slide-header">
+      <h2>Arquitectura del sistema</h2>
+      <span class="slide-subtitle">Cuatro capas desacopladas en red local WiFi 2.4 GHz</span>
+    </div>
+
+    <div class="slide-body">
+      <div class="arch-diagram">
+        <div class="arch-node">
+          <div>
+            <div class="arch-node-head">
+              <span class="arch-node-title">ESP32</span>
+              <span class="arch-node-tag">Nodo IoT</span>
+            </div>
+            <ul>
+              <li>Lector RFID RC522 (SPI)</li>
+              <li>Sensor DHT11 (Temp/Hum)</li>
+              <li>LED verde, LED rojo y buzzer</li>
+              <li>FreeRTOS + cola FIFO + NVS</li>
+            </ul>
+          </div>
+          <div class="arch-node-foot">WiFi 2.4 GHz · menú serial (m)</div>
+        </div>
+
+        <div class="arch-arrow">
+          <div class="arrow-label">HTTP JSON</div>
+          <div class="arrow-line bi"></div>
+          <div class="arrow-sub">api_key</div>
+        </div>
+
+        <div class="arch-node">
+          <div>
+            <div class="arch-node-head">
+              <span class="arch-node-title">API PHP 8</span>
+              <span class="arch-node-tag">Servicios</span>
+            </div>
+            <ul>
+              <li><code>auth/*</code> registro y login</li>
+              <li><code>esp32/*</code> acceso, medición, comando</li>
+              <li><code>app/*</code> estado, historial, límites, alertas, CSV</li>
+              <li><code>php -S 0.0.0.0:8080 -t backend</code></li>
+            </ul>
+          </div>
+          <div class="arch-node-foot">Puerto TCP 8080 · /api_aforo/</div>
+        </div>
+
+        <div class="arch-arrow">
+          <div class="arrow-label">PDO SQL</div>
+          <div class="arrow-line bi"></div>
+          <div class="arrow-sub">3306</div>
+        </div>
+
+        <div class="arch-node node-db">
+          <div>
+            <div class="arch-node-head">
+              <span class="arch-node-title">MariaDB</span>
+              <span class="arch-node-tag">Datos</span>
+            </div>
+            <ul>
+              <li>BD <code>aforo_iot</code> (InnoDB, utf8mb4)</li>
+              <li>9 tablas + vista <code>personas_dentro</code></li>
+              <li>Sentencias preparadas PDO</li>
+              <li>Usuario dedicado <code>aforo</code></li>
+            </ul>
+          </div>
+          <div class="arch-node-foot">Alternancia E/S y estado persistente</div>
+        </div>
+
+        <div class="arch-arrow">
+          <div class="arrow-label">HTTP JSON</div>
+          <div class="arrow-line bi"></div>
+          <div class="arrow-sub">X-Token</div>
+        </div>
+
+        <div class="arch-node node-app">
+          <div>
+            <div class="arch-node-head">
+              <span class="arch-node-title">App Android</span>
+              <span class="arch-node-tag">Cliente</span>
+            </div>
+            <ul>
+              <li>Java + Kotlin, Volley y Material 3</li>
+              <li>MPAndroidChart (24 h)</li>
+              <li>Servicio de notificaciones</li>
+              <li>URL editable sin recompilar</li>
+            </ul>
+          </div>
+          <div class="arch-node-foot">Polling Dashboard cada 5 s</div>
+        </div>
+      </div>
+
+      <div class="arch-details">
+        <div class="arch-detail-box">
+          <h4>Tiempos de operación</h4>
+          <p>Antirrebote RFID de <strong>3 s</strong>, mediciones DHT cada <strong>15 s</strong>, consulta de comandos cada <strong>3 s</strong> (actuación &lt; 4 s) y refresco del Dashboard cada <strong>5 s</strong>.</p>
+        </div>
+        <div class="arch-detail-box">
+          <h4>Seguridad segregada</h4>
+          <p>El ESP32 se autentica con <code>api_key</code> única por nodo y la app con token de sesión en el encabezado <code>X-Token</code>; contraseñas con <code>password_hash()</code>.</p>
+        </div>
+        <div class="arch-detail-box">
+          <h4>Resiliencia del aforo</h4>
+          <p>La regla de entrada/salida y el conteo viven en MariaDB: un reinicio del ESP32 no pierde quién está dentro y las salidas siempre están permitidas.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>Aforo IoT — Arquitectura y despliegue en red local</span>
+      <span class="slide-num">3 / 8</span>
+    </div>
+  </section>
+
+  <!-- ==================== DIAPOSITIVA 4: HARDWARE ==================== -->
+  <section class="slide">
+    <div class="slide-header">
+      <h2>Hardware y mapa de pines</h2>
+      <span class="slide-subtitle">Montaje en protoboard y definiciones del firmware <code>esp32_aforo.ino</code></span>
+    </div>
+
+    <div class="slide-body">
+      <div class="hw-layout">
+        <div class="hw-photo-box">
+          <div class="hw-photo-frame">
+            <img src="../hardware/fotos/montaje.jpg" alt="Montaje físico del ESP32 con RC522, DHT11, LEDs y buzzer">
+          </div>
+          <div class="hw-photo-caption">Prototipo físico: ESP32 DevKit, RC522, DHT11, LEDs (220 Ω) y buzzer</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; justify-content: space-between;">
+          <table class="m3-table">
+            <thead>
+              <tr>
+                <th>Componente</th>
+                <th>Constante en firmware</th>
+                <th>Pin ESP32</th>
+                <th>Detalle eléctrico</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>RC522 (SDA/SS)</strong></td>
+                <td><code>SS_PIN</code></td>
+                <td>GPIO 5</td>
+                <td>Bus SPI · alimentación estricta 3.3 V</td>
+              </tr>
+              <tr>
+                <td><strong>RC522 (SCK)</strong></td>
+                <td><code>SCK_PIN</code></td>
+                <td>GPIO 18</td>
+                <td>Reloj SPI</td>
+              </tr>
+              <tr>
+                <td><strong>RC522 (MISO)</strong></td>
+                <td><code>MISO_PIN</code></td>
+                <td>GPIO 19</td>
+                <td>Entrada de datos SPI</td>
+              </tr>
+              <tr>
+                <td><strong>RC522 (RST)</strong></td>
+                <td><code>RST_PIN</code></td>
+                <td>GPIO 22</td>
+                <td>Reset del módulo RFID</td>
+              </tr>
+              <tr>
+                <td><strong>RC522 (MOSI)</strong></td>
+                <td><code>MOSI_PIN</code></td>
+                <td>GPIO 23</td>
+                <td>Salida de datos SPI</td>
+              </tr>
+              <tr>
+                <td><strong>Sensor DHT11</strong></td>
+                <td><code>DHT_PIN</code> (<code>DHT_TIPO</code>)</td>
+                <td>GPIO 4</td>
+                <td>DATA · 3.3 V y GND (compatible DHT22)</td>
+              </tr>
+              <tr>
+                <td><strong>LED verde</strong></td>
+                <td><code>LED_VERDE</code></td>
+                <td>GPIO 25</td>
+                <td>Resistencia 220 Ω · acceso OK / abrir</td>
+              </tr>
+              <tr>
+                <td><strong>LED rojo</strong></td>
+                <td><code>LED_ROJO</code></td>
+                <td>GPIO 26</td>
+                <td>Resistencia 220 Ω · denegado / alerta</td>
+              </tr>
+              <tr>
+                <td><strong>Buzzer</strong></td>
+                <td><code>BUZZER</code></td>
+                <td>GPIO 27</td>
+                <td>2 kHz · pitidos de rechazo y alarma</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="hw-specs">
+            <div class="hw-spec-item">
+              <strong>Acceso permitido</strong>
+              LED verde 2 s · silencio
+            </div>
+            <div class="hw-spec-item">
+              <strong>Denegado / Alerta</strong>
+              LED rojo 2 s · 2 pulsos 100 ms
+            </div>
+            <div class="hw-spec-item">
+              <strong>Comandos remotos</strong>
+              Abrir: verde 3 s · Alarma: rojo + buzzer 3 s
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>Aforo IoT — Hardware y firmware ESP32</span>
+      <span class="slide-num">4 / 8</span>
+    </div>
+  </section>
+
+  <!-- ==================== DIAPOSITIVA 5: MODELO DE DATOS ==================== -->
+  <section class="slide">
+    <div class="slide-header">
+      <h2>Modelo de datos</h2>
+      <span class="slide-subtitle">Base relacional <code>aforo_iot</code> en MariaDB (9 tablas + 1 vista)</span>
+    </div>
+
+    <div class="slide-body">
+      <div class="db-grid">
+        <div class="db-table-card">
+          <div class="db-table-name"><span>usuarios</span><span class="chip chip-primary">Auth</span></div>
+          <div class="db-table-fields"><code>id</code> PK, <code>nombre</code>, <code>correo</code> UK, <code>password_hash</code>, <code>token</code>, <code>rol</code> (admin/usuario), <code>fecha_registro</code></div>
+        </div>
+
+        <div class="db-table-card">
+          <div class="db-table-name"><span>personas</span><span class="chip chip-primary">Catálogo</span></div>
+          <div class="db-table-fields"><code>id</code> PK, <code>nombre</code>, <code>uid_rfid</code> UK (hex mayúsculas), <code>activo</code> (baja lógica)</div>
+        </div>
+
+        <div class="db-table-card">
+          <div class="db-table-name"><span>dispositivos</span><span class="chip chip-primary">Nodos</span></div>
+          <div class="db-table-fields"><code>id</code> PK, <code>nombre</code>, <code>ubicacion</code>, <code>api_key</code> UK, <code>ultima_conexion</code>, <code>activo</code></div>
+        </div>
+
+        <div class="db-table-card db-rel">
+          <div class="db-table-name"><span>tarjetas_pendientes</span></div>
+          <div class="db-table-fields"><code>id</code> PK, <code>uid_rfid</code> UK, <code>dispositivo_id</code> FK, <code>fecha</code> — cola de tarjetas sin asignar</div>
+        </div>
+
+        <div class="db-table-card db-rel">
+          <div class="db-table-name"><span>registros_acceso</span></div>
+          <div class="db-table-fields"><code>id</code> PK, <code>persona_id</code> FK, <code>dispositivo_id</code> FK, <code>tipo</code> (entrada/salida), <code>fecha</code> — bitácora inmutable</div>
+        </div>
+
+        <div class="db-table-card db-rel">
+          <div class="db-table-name"><span>mediciones</span></div>
+          <div class="db-table-fields"><code>id</code> PK, <code>dispositivo_id</code> FK, <code>temperatura</code>, <code>humedad</code>, <code>fecha</code> — serie cada 15 s</div>
+        </div>
+
+        <div class="db-table-card db-ops">
+          <div class="db-table-name"><span>limites</span></div>
+          <div class="db-table-fields"><code>id</code> PK, <code>dispositivo_id</code> FK/UK (1:1), <code>temp_max</code>, <code>hum_max</code>, <code>aforo_max</code></div>
+        </div>
+
+        <div class="db-table-card db-ops">
+          <div class="db-table-name"><span>alertas</span></div>
+          <div class="db-table-fields"><code>id</code> PK, <code>dispositivo_id</code> FK, <code>tipo</code> (temperatura/humedad/aforo), <code>mensaje</code>, <code>valor</code>, <code>fecha</code>, <code>atendida</code></div>
+        </div>
+
+        <div class="db-table-card db-ops">
+          <div class="db-table-name"><span>comandos</span></div>
+          <div class="db-table-fields"><code>id</code> PK, <code>dispositivo_id</code> FK, <code>accion</code> (abrir_acceso/alarma), <code>estado</code> (pendiente/ejecutado), fechas</div>
+        </div>
+      </div>
+
+      <div class="db-view-bar">
+        <div>
+          <strong>Vista <code>personas_dentro</code></strong> — Calcula en tiempo real quién permanece dentro evaluando el último movimiento (<code>tipo = 'entrada'</code> sin evento posterior) con índice compuesto en <code>registros_acceso</code>.
+        </div>
+        <div style="text-align: right; flex-shrink: 0;">
+          <span class="chip chip-online">InnoDB · utf8mb4</span><br>
+          <span style="font-size: 12px; display: inline-block; margin-top: 4px;"><code>RESTRICT</code> en accesos · <code>CASCADE</code> en nodos</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>Aforo IoT — Esquema relacional y consistencia</span>
+      <span class="slide-num">5 / 8</span>
+    </div>
+  </section>
+
+  <!-- ==================== DIAPOSITIVA 6: APP ANDROID ==================== -->
+  <section class="slide">
+    <div class="slide-header">
+      <h2>Aplicación Android (Material Design 3)</h2>
+      <span class="slide-subtitle">Monitoreo en vivo, historial con CSV, gestión RFID y alertas</span>
+    </div>
+
+    <div class="slide-body">
+      <div class="app-grid">
+        <div class="phone-card">
+          <div class="phone-frame">
+            <img src="../capturas/s3_dashboard_controles.png" alt="Dashboard con aforo, clima y controles remotos">
+          </div>
+          <div class="phone-title">Dashboard y controles</div>
+          <div class="phone-desc">Aforo, clima, estado ESP32, Abrir acceso y Activar alarma</div>
+        </div>
+
+        <div class="phone-card">
+          <div class="phone-frame">
+            <img src="../capturas/s3_historial.png" alt="Historial de accesos y mediciones con exportación CSV">
+          </div>
+          <div class="phone-title">Historial y CSV</div>
+          <div class="phone-desc">Accesos y mediciones con filtro por fechas y exportar CSV</div>
+        </div>
+
+        <div class="phone-card">
+          <div class="phone-frame">
+            <img src="../capturas/s3_personas.png" alt="Catálogo de personas y tarjetas RFID pendientes">
+          </div>
+          <div class="phone-title">Personas y pendientes</div>
+          <div class="phone-desc">Padrón RFID y asignación directa de tarjetas desconocidas</div>
+        </div>
+
+        <div class="phone-card">
+          <div class="phone-frame">
+            <img src="../capturas/s3_alertas.png" alt="Listado y atención de alertas del sistema">
+          </div>
+          <div class="phone-title">Alertas</div>
+          <div class="phone-desc">Avisos de aforo, temperatura y humedad con atención</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>Aforo IoT — Capturas reales en dispositivo Android</span>
+      <span class="slide-num">6 / 8</span>
+    </div>
+  </section>
+
+  <!-- ==================== DIAPOSITIVA 7: PRUEBAS ==================== -->
+  <section class="slide">
+    <div class="slide-header">
+      <h2>Resultados de pruebas</h2>
+      <span class="slide-subtitle">Validación automatizada de API, pruebas físicas de hardware y pruebas de la app</span>
+    </div>
+
+    <div class="slide-body">
+      <div class="tests-grid">
+        <!-- API -->
+        <div class="test-col">
+          <div>
+            <span class="chip chip-online">API REST · Postman / Newman</span>
+            <div class="test-metric-row">
+              <span class="test-big">84 / 120</span>
+              <span class="test-unit">peticiones / aserciones</span>
+            </div>
+            <ul class="test-list">
+              <li><strong>0 fallas</strong> (100 % de éxito en toda la colección).</li>
+              <li>Cobertura completa de requerimientos <strong>RF01 a RF08</strong>.</li>
+              <li>Seguridad validada: rechazo <strong>401</strong> sin <code>X-Token</code> o <code>api_key</code> y <strong>400</strong> en rangos/fechas inválidos.</li>
+              <li>Comandos con entrega única, alertas sin duplicados y CSV UTF-8 BOM protegido contra inyección de fórmulas.</li>
+            </ul>
+          </div>
+          <div class="test-note online">
+            Colección reproducible con <code>newman run</code> contra PHP 8 y MariaDB local.
+          </div>
+        </div>
+
+        <!-- Hardware -->
+        <div class="test-col">
+          <div>
+            <span class="chip chip-warn">Hardware · ESP32 físico</span>
+            <div class="test-metric-row">
+              <span class="test-big">8 de 9</span>
+              <span class="test-unit">aprobadas (1 justificada)</span>
+            </div>
+            <ul class="test-list">
+              <li><strong>20 lecturas</strong> consecutivas alternando entrada y salida.</li>
+              <li><strong>Antirrebote:</strong> 1 solo registro con tarjeta sostenida 10 s.</li>
+              <li><strong>Tarjeta desconocida</strong> y <strong>aforo lleno</strong> con LED rojo, pitidos, alerta y notificación.</li>
+              <li><strong>API caída</strong> (reanudó sola) y <strong>DHT desconectado</strong> (RFID siguió operando).</li>
+              <li><strong>Comandos remotos:</strong> Abrir acceso (0 s) y Alarma (2 s).</li>
+            </ul>
+          </div>
+          <div class="test-note warn">
+            <strong>Prueba 5 (corte de WiFi) justificada:</strong> reiniciar el router cambia la IP DHCP de la laptop y rompe la URL de la demo.
+          </div>
+        </div>
+
+        <!-- App Android -->
+        <div class="test-col">
+          <div>
+            <span class="chip chip-primary">App Android · Dispositivo físico</span>
+            <div class="test-metric-row">
+              <span class="test-big">32 casos</span>
+              <span class="test-unit">verificados en Sprint 3</span>
+            </div>
+            <ul class="test-list">
+              <li>Compilación <code>assembleDebug</code> y <code>lintDebug</code> sin errores en todas las ramas.</li>
+              <li><strong>22 pruebas de pantallas:</strong> login persistente, Dashboard, controles, historial, CSV, personas, límites, alertas y gráficas.</li>
+              <li><strong>4 pruebas de red/401:</strong> sin cierres inesperados, reintento y redirección al login ante token inválido.</li>
+              <li><strong>6 pruebas de notificaciones:</strong> canal de alta importancia y servicio en primer plano.</li>
+            </ul>
+          </div>
+          <div class="test-note info">
+            Defectos detectados en pruebas (alertas viejas y monitoreo en segundo plano) corregidos antes del cierre.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>Aforo IoT — Evidencia en docs/pruebas/</span>
+      <span class="slide-num">7 / 8</span>
+    </div>
+  </section>
+
+  <!-- ==================== DIAPOSITIVA 8: CONCLUSIONES Y TRABAJO FUTURO ==================== -->
+  <section class="slide">
+    <div class="slide-header">
+      <h2>Conclusiones y trabajo futuro</h2>
+      <span class="slide-subtitle">Cierre del Sprint 3, limitaciones conocidas y evolución propuesta</span>
+    </div>
+
+    <div class="slide-body">
+      <div class="conc-grid">
+        <div class="conc-stack">
+          <div class="conc-box">
+            <h3>Conclusiones</h3>
+            <ul>
+              <li>Integración funcional en red local de <strong>ESP32, API PHP 8, MariaDB y App Android</strong> para control de acceso y clima.</li>
+              <li>La separación por capas permitió avanzar de forma incremental sin retrabajo desde autenticación hasta alertas y comandos.</li>
+              <li><code>X-Token</code> y <code>api_key</code> mantienen aislados los permisos de usuarios y hardware.</li>
+              <li><strong>Material Design 3</strong> garantizó consistencia visual (claro/oscuro) y las notificaciones locales operan sin servicios externos.</li>
+            </ul>
+          </div>
+
+          <div class="conc-box">
+            <h3>Limitaciones actuales</h3>
+            <ul>
+              <li>Exportación CSV en el teléfono limitada a registros visibles (máx. 100); sin historial de descargas en servidor.</li>
+              <li>Gráficas fijas a 24 h y un dispositivo activo a la vez en Límites y Gráficas.</li>
+              <li>Kit equipado con sensor <strong>DHT11</strong> (±2 °C) y pruebas sin validación física de corte de WiFi por IP dinámica.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="conc-box future">
+          <h3>Trabajo futuro</h3>
+          <ul>
+            <li><strong>Exportación completa desde el servidor:</strong> consumir <code>app/exportar.php</code> desde la app para descargar rangos amplios y registrar descargas.</li>
+            <li><strong>Notificaciones push (FCM):</strong> sustituir el sondeo del servicio en primer plano por mensajería push y tareas programadas del sistema.</li>
+            <li><strong>Gráficas configurables:</strong> permitir elegir rangos de fechas y comparar periodos históricos.</li>
+            <li><strong>Soporte multidispositivo:</strong> selector de nodo ESP32 en las pantallas de Límites y Gráficas.</li>
+            <li><strong>Calidad y despliegue:</strong> añadir pruebas instrumentadas de UI, pruebas de carga en <code>esp32/medicion.php</code> y firma de release para distribución interna.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>Aforo IoT — Gracias por su atención · Preguntas</span>
+      <span class="slide-num">8 / 8</span>
+    </div>
+  </section>
+
+</body>
+</html>
