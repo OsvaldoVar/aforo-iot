@@ -24,16 +24,49 @@ El [Issue #2](https://github.com/OsvaldoVar/aforo-iot/issues/2) requiere una fot
 
 | Componente | Qué se debe comprobar | Estado |
 | --- | --- | --- |
-| ESP32 | Arranca y muestra un mensaje en el monitor serie. | Pendiente |
-| RC522 | El ESP32 se comunica con el lector y reconoce su versión. | Pendiente |
-| Tarjeta RFID A | Se lee por separado dos veces y se obtiene el mismo identificador. | Pendiente |
-| Tarjeta RFID B | Se obtiene el mismo identificador en dos lecturas y es distinto del de A. | Pendiente |
-| Tarjeta RFID C | Se obtiene el mismo identificador en dos lecturas y es distinto de los de A y B. | Pendiente |
-| DHT22 | Entrega lecturas válidas de temperatura y humedad. | Pendiente |
-| LED verde | Enciende y apaga al activarlo por separado. | Pendiente |
-| LED rojo | Enciende y apaga al activarlo por separado. | Pendiente |
-| Buzzer | Suena al activarlo y deja de sonar al desactivarlo. | Pendiente |
+| ESP32 | Arranca y muestra un mensaje en el monitor serie. | OK |
+| RC522 | El ESP32 se comunica con el lector y reconoce su versión. | OK |
+| Tarjeta RFID A | Se lee por separado dos veces y se obtiene el mismo identificador. | OK |
+| Tarjeta RFID B | Se obtiene el mismo identificador en dos lecturas y es distinto del de A. | OK |
+| Tarjeta RFID C | Se obtiene el mismo identificador en dos lecturas y es distinto de los de A y B. | OK |
+| DHT22 | Entrega lecturas válidas de temperatura y humedad. | Falla: cableado en reparación |
+| LED verde | Enciende y apaga al activarlo por separado. | OK |
+| LED rojo | Enciende y apaga al activarlo por separado. | OK |
+| Buzzer | Suena al activarlo y deja de sonar al desactivarlo. | OK |
+
+## Evidencias
+
+Pruebas realizadas el 25 de noviembre de 2026 con el ESP32, la app Android y la API en la red local.
+
+### Fotos
+
+- [Material sobre la mesa](fotos/material.jpg)
+- [Montaje terminado](fotos/montaje.jpg)
+
+### Lecturas RFID
+
+El lector RC522 entregó tres identificadores distintos. Cada uno se presentó más de una vez y conservó su valor, lo que confirma el antirrebote y la estabilidad de la lectura.
+
+| UID | Lecturas registradas |
+| --- | --- |
+| `12121212` | 09:11:04 y 09:11:08 |
+| `19281038` | 09:11:12 y 09:18:23 |
+| `9749A07F` | 09:11:17, 09:11:23 y 09:14:07 |
+
+Las tres UID anteriores quedaron en `tarjetas_pendientes` por no estar en el padrón. Para probar el acceso reconocido se emularon por NFC las UID de las personas del seed:
+
+| Persona | UID | Hora | Resultado |
+| --- | --- | --- | --- |
+| Ana Martinez | `A1B2C3D4` | 09:15:06 | entrada registrada |
+| Carlos Lopez | `B2C3D4E5` | 09:15:20 | salida registrada |
+| Sofia Ramirez | `C3D4E5F6` | 09:15:24 | entrada registrada |
+
+El LED verde se encendió con las UID registradas; el LED rojo y los pitidos, con las desconocidas. El buzzer sonó al activarse y se detuvo al desactivarse.
+
+### DHT22
+
+**Falla.** El ESP32 no envió ninguna medición a la tabla `mediciones` durante la prueba: el sensor tiene un problema de cableado pendiente de reparación. Hay que revisar DATA en GPIO 4, alimentación a 3.3 V, GND y la resistencia pull-up de 10 kΩ, y repetir la prueba. Por eso el criterio «una medición del ESP32 real aparece en la tabla `mediciones`» todavía no se cumple.
 
 ## Estado actual
 
-Por el momento no cuento con pruebas físicas realizadas ni con fotografías del material. Estas evidencias quedan pendientes y se agregarán cuando estén disponibles.
+El ESP32, el lector RC522, los LEDs y el buzzer están verificados. El DHT22 queda pendiente por cableado; cuando se repare se agregará la salida de `SELECT * FROM mediciones ORDER BY id DESC LIMIT 3;` y se actualizará esta tabla.
