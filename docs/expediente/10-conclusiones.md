@@ -22,6 +22,7 @@ El proyecto **Aforo IoT** integró un lector RFID, un sensor de temperatura y hu
 - No se comprobó a qué distancia puede detectar las tarjetas el lector RFID RC522 y faltan más pruebas con las tarjetas físicas del kit.
 - El tiempo de reconexión automática ante un corte de WiFi no pudo verificarse físicamente debido al posible cambio de dirección IP del servidor local.
 - Ante una interrupción de la API, el dispositivo reanudó el envío de mediciones 18 segundos después de restablecer el servicio, por lo que la disponibilidad de los datos depende de la comunicación con el servidor.
+- El kit incluye un sensor DHT11 (0–50 °C, 20–90 % de humedad, ±2 °C) en lugar del DHT22 previsto; el firmware lo soporta con `DHT_TIPO` (#105), pero la precisión es menor.
 
 ## Trabajo futuro
 
