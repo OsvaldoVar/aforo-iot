@@ -134,4 +134,10 @@
   <string name="tipo_alerta">Alerta</string>
   <string name="alertas_descripcion">Revisa y atiende las alertas del sistema</string>
   <string name="limites_descripcion">Configura aforo, temperatura y humedad</string>
+  <string name="graficas">Gráficas</string>
+  <string name="graficas_descripcion">Temperatura, humedad y entradas de las últimas 24 h</string>
+  <string name="graficas_clima_24h">Temperatura y humedad (24 h)</string>
+  <string name="entradas_por_hora">Entradas por hora (24 h)</string>
+  <string name="entradas">Entradas</string>
+  <string name="sin_datos_graficas">No hay datos en las últimas 24 h.</string>
 </resources>
