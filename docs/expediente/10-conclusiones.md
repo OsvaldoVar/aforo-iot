@@ -19,6 +19,9 @@ El proyecto **Aforo IoT** integró un lector RFID, un sensor de temperatura y hu
 - Las pruebas de hardware se hicieron con el ESP32 y un DHT11 en el entorno local; la validación con el lector RFID físico quedó limitada a las tarjetas de prueba.
 - La app administra un dispositivo activo a la vez para las pantallas de límites y gráficas.
 - No hay pruebas automatizadas de interfaz; la verificación es manual y con compilación más lint en cada rama.
+- No se comprobó a qué distancia puede detectar las tarjetas el lector RFID RC522 y faltan más pruebas con las tarjetas físicas del kit.
+- El tiempo de reconexión automática ante un corte de WiFi no pudo verificarse físicamente debido al posible cambio de dirección IP del servidor local.
+- Ante una interrupción de la API, el dispositivo reanudó el envío de mediciones 18 segundos después de restablecer el servicio, por lo que la disponibilidad de los datos depende de la comunicación con el servidor.
 
 ## Trabajo futuro
 
