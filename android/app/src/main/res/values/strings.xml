@@ -140,4 +140,9 @@
   <string name="entradas_por_hora">Entradas por hora (24 h)</string>
   <string name="entradas">Entradas</string>
   <string name="sin_datos_graficas">No hay datos en las últimas 24 h.</string>
+  <string name="canal_alertas">Alertas de Aforo IoT</string>
+  <string name="canal_servicio">Monitoreo de Aforo IoT</string>
+  <string name="servicio_alertas">Aforo IoT</string>
+  <string name="servicio_alertas_texto">Vigilando alertas del sistema</string>
+  <string name="alerta_notificacion_titulo">Nueva alerta</string>
 </resources>
