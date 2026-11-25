@@ -24,12 +24,26 @@ Abre la pestaña **Variables** de la colección y ajusta `base_url` según tu en
 
 La variable `api_key` viene precargada con `demo-esp32-key-0001` y `token` se llena automáticamente al ejecutar **Login OK**.
 
-## Ejecutar con Collection Runner
+## Ejecutar con Collection Runner y newman
+
+### Desde Postman Collection Runner
 
 1. Haz clic en los tres puntos de la colección **Aforo IoT - Sprint 1** y elige **Run collection**.
-2. Mantén el orden original de las peticiones y pulsa **Run Aforo IoT - Sprint 1**.
+2. Mantén el orden original de las peticiones para asegurar la correcta secuencia de autenticación, registros y accesos.
+3. Pulsa **Run Aforo IoT - Sprint 1**.
 
-> **Nota:** Las peticiones **Acceso Ana 1a vez (Entrada)** y **Acceso Ana 2a vez (Salida)** deben ejecutarse en ese orden para validar correctamente la alternancia entrada/salida (con Ana partiendo fuera tras cargar `seed.sql`).
+> **Nota:** Las peticiones **Acceso Ana 1a vez (Entrada)** y **Acceso Ana 2a vez (Salida)** deben ejecutarse en ese orden para validar correctamente la alternancia entrada/salida (con Ana partiendo fuera tras cargar `seed.sql`). Asimismo, **Login OK** debe ejecutarse antes de las peticiones de la App para que la variable `token` se pueble de forma automática.
+
+### Desde la terminal con newman
+
+Para ejecutar la colección completa desde la raíz del repositorio:
+
+```bash
+newman run docs/postman/aforo-iot.postman_collection.json \
+  --env-var 'base_url=http://localhost:8080/api_aforo'
+```
+
+Si ejecutas el backend en otro puerto o dirección (por ejemplo `http://127.0.0.1:8081/api_aforo`), ajusta la variable `--env-var 'base_url=...'` correspondientemente.
 
 ## Límites y alertas S3-A1/A2
 
