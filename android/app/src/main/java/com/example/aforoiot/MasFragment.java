@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.snackbar.Snackbar;
+
 public class MasFragment extends Fragment {
 
     @Nullable
@@ -30,5 +32,8 @@ public class MasFragment extends Fragment {
                 startActivity(new Intent(requireContext(), LimitesActivity.class)));
         vista.findViewById(R.id.cardGraficas).setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), GraficasActivity.class)));
+        vista.findViewById(R.id.cardServidor).setOnClickListener(v ->
+                DialogoServidor.mostrar(requireContext(), () ->
+                        Snackbar.make(vista, R.string.servidor_guardado, Snackbar.LENGTH_LONG).show()));
     }
 }

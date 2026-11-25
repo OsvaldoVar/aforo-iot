@@ -148,4 +148,13 @@
   <string name="exportar_csv">Exportar CSV</string>
   <string name="sin_datos_exportar">No hay datos para exportar</string>
   <string name="error_exportar">No se pudo generar el archivo</string>
+  <string name="servidor">Servidor</string>
+  <string name="servidor_descripcion">Cambia la IP o el puerto de la API sin recompilar</string>
+  <string name="servidor_titulo">Servidor de la API</string>
+  <string name="servidor_url">URL del servidor</string>
+  <string name="servidor_ayuda">Ej. http://192.168.0.102:8080/api_aforo/</string>
+  <string name="servidor_invalido">Escribe una URL válida, por ejemplo http://192.168.0.102:8080/api_aforo/</string>
+  <string name="servidor_cambiar">Configurar servidor</string>
+  <string name="servidor_guardado">Servidor actualizado</string>
+  <string name="servidor_actual">Servidor: %1$s</string>
 </resources>
