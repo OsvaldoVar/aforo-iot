@@ -183,6 +183,9 @@ String leerLinea(const char* aviso) {
 int leerEntero(const char* aviso, int minimo, int maximo) {
     for (;;) {
         const String texto = leerLinea(aviso);
+        if (entradaExpirada) {
+            return minimo;  // sin respuesta: el llamador revisa entradaExpirada y cierra el menú
+        }
         const long valor = texto.toInt();
         if (texto.length() > 0 && valor >= minimo && valor <= maximo) {
             return static_cast<int>(valor);
@@ -702,14 +705,17 @@ void consultarTarjeta() {
         trabajo.uid[2 * indice + 1] = hex[valor & 0x0F];
     }
     trabajo.instante = millis();
-    if (!registrarLectura(trabajo.uid, trabajo.instante)) {
-        return;
-    }
-    if (xQueueSend(colaTrabajos, &trabajo, 0) != pdPASS) {
+    // Con la cola llena no se registra el antirrebote, para que la tarjeta pueda volver a leerse.
+    if (uxQueueSpacesAvailable(colaTrabajos) == 0) {
         if (tareaIo != nullptr) {
             xTaskNotify(tareaIo, AVISO_COLA_ACCESO, eSetBits);
         }
+        return;
     }
+    if (!registrarLectura(trabajo.uid, trabajo.instante)) {
+        return;
+    }
+    xQueueSend(colaTrabajos, &trabajo, 0);
 }
 
 // ---------- tarea de red ----------
@@ -922,4 +928,5 @@ void loop() {
             }
         }
     }
+    vTaskDelay(pdMS_TO_TICKS(10));  // cede el núcleo 1 entre sondeos del RC522
 }
