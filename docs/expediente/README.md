@@ -10,7 +10,7 @@
 | 2 | Usuarios, requerimientos funcionales y no funcionales, casos de uso UML | C (OscarJDA) | Sprint 1 | [02-requerimientos-casos-uso.md](./02-requerimientos-casos-uso.md) | Disponible |
 | 3 | Arquitectura del sistema y diagrama de despliegue | A (OsvaldoVar) | Sprint 1 | [03-arquitectura.md](./03-arquitectura.md) | Disponible |
 | 4 | Modelo de datos (diagrama entidad-relación y diccionario de datos) | A (OsvaldoVar) | Sprint 2 | [04-modelo-datos.md](./04-modelo-datos.md) | Listo |
-| 4 | Diagrama de conexiones del hardware | B (salazar5678-web) | Sprint 1 | `docs/hardware/` | Pendiente |
+| 4 | Diagrama de conexiones del hardware | B (salazar5678-web) | Sprint 1 | [conexiones.md](../hardware/conexiones.md) | Disponible |
 | 5 | Modelo de datos (diagrama ER en S2) y documentación de endpoints (`docs/api.md`, cierre en S3) | A (OsvaldoVar) | Sprint 2–3 | [api.md](../api.md) | Disponible |
 | 6 | Protocolo y flujo de comunicación IoT, diagrama de secuencia | B (salazar5678-web) | Sprint 3 | [05-protocolo-iot.md](./05-protocolo-iot.md) | Disponible |
 | 7 | Manual de instalación, configuración y ejecución | A (OsvaldoVar) | Sprint 3 | [instalacion.md](../instalacion.md) y [README.md](../../README.md) | Disponible |
