@@ -1,5 +1,7 @@
 package com.example.aforoiot;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +10,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
 import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -22,6 +25,10 @@ import com.google.android.material.tabs.TabLayout;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,10 +42,13 @@ public class HistorialFragment extends Fragment {
 
     private TabLayout tabsHistorial;
     private MaterialButton btnRango;
+    private MaterialButton btnExportar;
     private RecyclerView rvHistorial;
     private View layoutVacio;
     private AccesosAdapter accesosAdapter;
     private MedicionesAdapter medicionesAdapter;
+    private final List<RegistroAcceso> accesosActuales = new ArrayList<>();
+    private final List<MedicionHistorial> medicionesActuales = new ArrayList<>();
 
     private String desde;
     private String hasta;
@@ -57,6 +67,7 @@ public class HistorialFragment extends Fragment {
 
         tabsHistorial = vista.findViewById(R.id.tabsHistorial);
         btnRango = vista.findViewById(R.id.btnRango);
+        btnExportar = vista.findViewById(R.id.btnExportar);
         rvHistorial = vista.findViewById(R.id.rvHistorial);
         layoutVacio = vista.findViewById(R.id.layoutVacio);
 
@@ -66,6 +77,7 @@ public class HistorialFragment extends Fragment {
         rvHistorial.setAdapter(accesosAdapter);
 
         btnRango.setOnClickListener(v -> abrirSelectorRango());
+        btnExportar.setOnClickListener(v -> exportarCsv());
         tabsHistorial.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab pestana) {
@@ -149,6 +161,8 @@ public class HistorialFragment extends Fragment {
                 }
             }
         }
+        accesosActuales.clear();
+        accesosActuales.addAll(registros);
         accesosAdapter.actualizar(registros);
         mostrarVacio(registros.isEmpty());
     }
@@ -172,6 +186,8 @@ public class HistorialFragment extends Fragment {
                 }
             }
         }
+        medicionesActuales.clear();
+        medicionesActuales.addAll(mediciones);
         medicionesAdapter.actualizar(mediciones);
         mostrarVacio(mediciones.isEmpty());
     }
@@ -203,6 +219,59 @@ public class HistorialFragment extends Fragment {
         SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         formato.setTimeZone(TimeZone.getTimeZone("UTC"));
         return formato.format(new Date(milisegundos));
+    }
+
+    private void exportarCsv() {
+        boolean esAccesos = tabsHistorial.getSelectedTabPosition() == 0;
+        if (esAccesos ? accesosActuales.isEmpty() : medicionesActuales.isEmpty()) {
+            mostrarMensaje(getString(R.string.sin_datos_exportar));
+            return;
+        }
+
+        StringBuilder csv = new StringBuilder();
+        if (esAccesos) {
+            csv.append("Nombre,Tipo,Fecha\n");
+            for (RegistroAcceso registro : accesosActuales) {
+                csv.append(csv(registro.getNombre())).append(',')
+                        .append(csv(registro.getTipo())).append(',')
+                        .append(csv(registro.getFecha())).append('\n');
+            }
+        } else {
+            csv.append("Temperatura,Humedad,Fecha\n");
+            for (MedicionHistorial medicion : medicionesActuales) {
+                csv.append(String.format(Locale.US, "%.1f,%.1f,%s\n",
+                        medicion.getTemperatura(),
+                        medicion.getHumedad(),
+                        csv(medicion.getFecha())));
+            }
+        }
+
+        try {
+            File archivo = new File(requireContext().getCacheDir(), "historial.csv");
+            try (OutputStreamWriter escritor = new OutputStreamWriter(
+                    new FileOutputStream(archivo), StandardCharsets.UTF_8)) {
+                escritor.write('\uFEFF');
+                escritor.write(csv.toString());
+            }
+
+            Uri uri = FileProvider.getUriForFile(requireContext(),
+                    requireContext().getPackageName() + ".fileprovider", archivo);
+            Intent compartir = new Intent(Intent.ACTION_SEND)
+                    .setType("text/csv")
+                    .putExtra(Intent.EXTRA_STREAM, uri)
+                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(Intent.createChooser(compartir, getString(R.string.exportar_csv)));
+        } catch (Exception e) {
+            mostrarMensaje(getString(R.string.error_exportar));
+        }
+    }
+
+    private String csv(String valor) {
+        String texto = valor == null ? "" : valor;
+        if (!texto.isEmpty() && "=+-@\t\r".indexOf(texto.charAt(0)) >= 0) {
+            texto = "'" + texto;
+        }
+        return "\"" + texto.replace("\"", "\"\"") + "\"";
     }
 
     private void manejarError(VolleyError error) {

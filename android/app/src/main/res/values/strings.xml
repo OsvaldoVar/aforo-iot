@@ -145,4 +145,7 @@
   <string name="servicio_alertas">Aforo IoT</string>
   <string name="servicio_alertas_texto">Vigilando alertas del sistema</string>
   <string name="alerta_notificacion_titulo">Nueva alerta</string>
+  <string name="exportar_csv">Exportar CSV</string>
+  <string name="sin_datos_exportar">No hay datos para exportar</string>
+  <string name="error_exportar">No se pudo generar el archivo</string>
 </resources>
