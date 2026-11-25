@@ -103,19 +103,19 @@ sequenceDiagram
     participant B as MariaDB
     participant M as App Android
 
-    Note over T,E: Lectura RFID pendiente<br/>PR #74
+    Note over T,E: Lectura RFID pendiente<br/>PR 74
     T->>E: Lectura RFID (UID)
     E->>A: POST esp32/acceso.php {api_key, uid}
     A->>B: Valida tarjeta y aforo, registra el movimiento si procede
     B-->>A: Resultado de la operación
     A-->>E: {success, tipo o error}
-    E->>E: LED verde o LED rojo con buzzer<br/>Integración pendiente (PR #73)
+    E->>E: LED verde o LED rojo con buzzer<br/>Integración pendiente (PR 73)
 
     E->>A: POST esp32/medicion.php {api_key, temperatura, humedad} cada 15 s
     A->>B: Registra medición y evalúa límites
     B-->>A: Resultado de la operación
     A-->>E: {success, medicion_id, alerta}
-    Note over E: Alerta ambiental pendiente<br/>Issue #79
+    Note over E: Alerta ambiental pendiente<br/>Issue 79
 
     M->>A: GET app/estado.php (cada 5 s, X-Token)
     A->>B: Consulta aforo y última medición
@@ -125,7 +125,7 @@ sequenceDiagram
     M->>A: POST app/comando.php {dispositivo_id, accion} con X-Token
     A->>B: Guarda el comando como pendiente
     A-->>M: HTTP 201, comando encolado
-    Note over E,A: Sondeo de comandos pendiente<br/>Issue #78
+    Note over E,A: Sondeo de comandos pendiente<br/>Issue 78
     E->>A: GET esp32/comando.php?api_key=... cada 3 s
     A->>B: Selecciona el pendiente más antiguo y lo marca ejecutado
     B-->>A: Comando o cola vacía
