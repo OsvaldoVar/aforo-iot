@@ -28,6 +28,7 @@ public final class AlertaMonitor {
     private static Handler manejador;
     private static Runnable consulta;
     private static Context aplicacion;
+    private static boolean inicializado;
 
     private AlertaMonitor() {
     }
@@ -37,6 +38,7 @@ public final class AlertaMonitor {
             return;
         }
         aplicacion = contexto.getApplicationContext();
+        inicializado = false;
         crearCanal();
         manejador = new Handler(Looper.getMainLooper());
         consulta = new Runnable() {
@@ -55,6 +57,7 @@ public final class AlertaMonitor {
         }
         manejador = null;
         consulta = null;
+        inicializado = false;
     }
 
     private static void crearCanal() {
@@ -94,7 +97,13 @@ public final class AlertaMonitor {
                     SharedPreferences preferencias = aplicacion.getSharedPreferences(
                             PREFERENCIAS, Context.MODE_PRIVATE);
                     int ultima = preferencias.getInt(ULTIMA_ALERTA, 0);
-                    if (ultima == 0 || id < ultima) {
+
+                    if (!inicializado) {
+                        preferencias.edit().putInt(ULTIMA_ALERTA, id).apply();
+                        inicializado = true;
+                        return;
+                    }
+                    if (id < ultima) {
                         preferencias.edit().putInt(ULTIMA_ALERTA, id).apply();
                         return;
                     }
